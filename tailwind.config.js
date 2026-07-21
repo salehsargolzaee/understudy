@@ -4,11 +4,28 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        serif: ['"Iowan Old Style"', '"Palatino Linotype"', "Palatino", "Georgia", "Cambria", "serif"],
+        sans: ["ui-sans-serif", "system-ui", "-apple-system", '"Segoe UI"', "Roboto", "sans-serif"],
+        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
       },
       colors: {
-        ink: { 950: "#0c0d11", 900: "#14161c", 800: "#1d2028", 700: "#3a3f4b" },
-        paper: "#fbfbfa",
+        // warm neutral ink scale
+        ink: {
+          950: "#17150f",
+          900: "#211e17",
+          800: "#33302a",
+          700: "#5b564c",
+          600: "#847d6f",
+          500: "#a49c8d",
+        },
+        paper: "#faf9f6",
+        // one restrained accent, used sparingly
+        accent: {
+          DEFAULT: "#b45309",
+          soft: "#f4ead9",
+        },
+        pass: "#2f7d55",
+        fail: "#c0392b",
       },
     },
   },

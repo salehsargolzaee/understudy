@@ -3,19 +3,44 @@ import type { Exercise } from "../content";
 import { useRun } from "../hooks/useRun";
 import { clearCode, loadCode, markPassed, saveCode } from "../lib/storage";
 import { useDebouncedEffect } from "../lib/useDebouncedEffect";
-import { formatTimestamp, youtubeUrl } from "../lib/youtube";
+import { useIsDesktop } from "../lib/useMediaQuery";
+import AuthorChip from "./AuthorChip";
 import DataTable from "./DataTable";
 import Editor from "./Editor";
+import Pane from "./Pane";
+import Split from "./Split";
 import TestResults from "./TestResults";
 import VideoEmbed from "./VideoEmbed";
 import Writeup from "./Writeup";
 
-type Pane = "brief" | "code";
+type Tab = "watch" | "brief" | "code";
+
+/* tiny inline icons keep the dependency surface small */
+const Play = ({ c = "" }) => (
+  <svg viewBox="0 0 12 14" className={c} fill="currentColor" aria-hidden>
+    <path d="M0 1l11 6L0 13z" />
+  </svg>
+);
+const Stop = ({ c = "" }) => (
+  <svg viewBox="0 0 12 12" className={c} fill="currentColor" aria-hidden>
+    <rect width="12" height="12" rx="1.5" />
+  </svg>
+);
+const Spin = ({ c = "" }) => (
+  <svg viewBox="0 0 24 24" className={`animate-spin ${c}`} fill="none" aria-hidden>
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5" opacity=".2" />
+    <path d="M21 12a9 9 0 00-9-9" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+  </svg>
+);
+const tabIcon: Record<Tab, string> = { watch: "▶", brief: "❯", code: "{ }" };
 
 export default function ExerciseWorkspace({ exercise, onPass }: { exercise: Exercise; onPass: () => void }) {
   const { meta } = exercise;
+  const desktop = useIsDesktop();
   const [code, setCode] = useState(() => loadCode(meta.id) ?? exercise.starter);
-  const [pane, setPane] = useState<Pane>("brief");
+  const [tab, setTab] = useState<Tab>("watch");
+  const [saved, setSaved] = useState(false);
+  const savedTimer = useRef<ReturnType<typeof setTimeout>>();
   const codeRef = useRef(code);
   codeRef.current = code;
 
@@ -26,16 +51,26 @@ export default function ExerciseWorkspace({ exercise, onPass }: { exercise: Exer
 
   const { state, run, cancel, busy } = useRun(exercise, handlePass);
 
-  useDebouncedEffect(() => saveCode(meta.id, code), [code, meta.id]);
+  useDebouncedEffect(() => {
+    saveCode(meta.id, code);
+    setSaved(true);
+    clearTimeout(savedTimer.current);
+    savedTimer.current = setTimeout(() => setSaved(false), 1400);
+  }, [code, meta.id]);
+  useEffect(() => () => clearTimeout(savedTimer.current), []);
 
   const doRun = useCallback(() => {
     if (busy) return;
-    setPane("code");
+    if (!desktop) setTab("code");
     void run(codeRef.current);
-  }, [busy, run]);
+  }, [busy, run, desktop]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "Enter") {
+        e.preventDefault();
+        doRun();
+      }
       if (e.key === "Escape" && busy) {
         e.preventDefault();
         cancel();
@@ -43,7 +78,7 @@ export default function ExerciseWorkspace({ exercise, onPass }: { exercise: Exer
     };
     addEventListener("keydown", onKey);
     return () => removeEventListener("keydown", onKey);
-  }, [busy, cancel]);
+  }, [doRun, busy, cancel]);
 
   const reset = () => {
     if (!confirm("Reset your code back to the starter? This cannot be undone.")) return;
@@ -51,123 +86,181 @@ export default function ExerciseWorkspace({ exercise, onPass }: { exercise: Exer
     setCode(exercise.starter);
   };
 
+  /* ── shared pane contents ─────────────────────────────────────────────── */
+
+  const videoPane = <VideoEmbed videoId={meta.video_id} start={meta.start} playlist={meta.playlist} author={meta.author} />;
+
+  const briefPane = (
+    <Pane
+      label="Brief"
+      actions={
+        <div className="flex items-center gap-1">
+          {meta.tags.slice(0, 3).map((t) => (
+            <span key={t} className="rounded-full bg-ink-900/[0.05] px-2 py-0.5 font-mono text-[9.5px] text-ink-600">
+              {t}
+            </span>
+          ))}
+        </div>
+      }
+    >
+      <article className="mx-auto max-w-2xl px-5 py-6 sm:px-7">
+        <Writeup markdown={exercise.writeup} />
+        <DataTable files={exercise.data} />
+        <footer className="mt-10 flex flex-wrap items-center gap-3 border-t border-ink-900/[0.08] pt-4">
+          <AuthorChip handle={meta.author} role="Exercise author" />
+          <span className="ml-auto font-mono text-[10px] text-ink-500">
+            {meta.id} · {meta.runtime}
+          </span>
+        </footer>
+      </article>
+    </Pane>
+  );
+
+  const editorActions = (
+    <>
+      <span className={`label mr-1 text-pass transition-opacity duration-500 ${saved ? "opacity-100" : "opacity-0"}`}>
+        saved
+      </span>
+      <button
+        onClick={reset}
+        title="Reset to starter code"
+        className="rounded-md px-2 py-1 text-[11px] font-medium text-ink-600 transition-colors hover:bg-ink-900/[0.06] hover:text-ink-950"
+      >
+        Reset
+      </button>
+      {busy ? (
+        <button
+          onClick={cancel}
+          title="Stop (Esc)"
+          className="flex h-7 items-center gap-1.5 rounded-md bg-fail px-3 text-[11px] font-semibold text-white transition hover:brightness-110 active:scale-[.97]"
+        >
+          <Stop c="h-2.5 w-2.5" /> Stop
+        </button>
+      ) : (
+        <button
+          onClick={doRun}
+          title="Run tests (⌘/Ctrl + Enter)"
+          className="flex h-7 items-center gap-1.5 rounded-md bg-ink-950 px-3 text-[11px] font-semibold text-white transition hover:bg-ink-800 active:scale-[.97]"
+        >
+          <Play c="h-2.5 w-2.5 text-accent" /> Run
+          <kbd className="ml-0.5 hidden font-sans text-[9px] font-normal text-white/40 sm:inline">⌘↵</kbd>
+        </button>
+      )}
+    </>
+  );
+
+  const editorPane = (
+    <Pane label="submission.py" scroll={false} actions={editorActions}>
+      <Editor value={code} onChange={setCode} onRun={doRun} readOnly={busy} />
+    </Pane>
+  );
+
+  const resultsPane = (
+    <Pane
+      label="Tests"
+      bodyClassName="bg-paper"
+      actions={
+        <>
+          {busy && <Spin c="h-3 w-3 text-ink-600" />}
+          {state.summary && (
+            <span className={`font-mono text-[10px] font-medium tabular-nums ${state.summary.ok ? "text-pass" : "text-fail"}`}>
+              {state.summary.passed}/{state.summary.total}
+            </span>
+          )}
+          {meta.packages.length > 0 && (
+            <span className="hidden font-mono text-[9.5px] text-ink-500 xl:inline">+{meta.packages.join(" +")}</span>
+          )}
+        </>
+      }
+    >
+      <TestResults state={state} />
+    </Pane>
+  );
+
+  /* ── Desktop: one workspace, four panes, three handles ────────────────── */
+  if (desktop) {
+    return (
+      <div className="flex min-h-0 flex-1 bg-ink-950 p-1.5 pt-0">
+        <div className="flex min-h-0 min-w-0 flex-1 overflow-hidden rounded-lg ring-1 ring-white/[0.06]">
+          <Split
+            direction="vertical"
+            id="shell"
+            initial={0.46}
+            minFirst={340}
+            minSecond={380}
+            label="Resize study column and work column"
+            className="flex-1"
+            first={
+              <Split
+                direction="horizontal"
+                id="study"
+                initial={0.5}
+                minFirst={150}
+                minSecond={160}
+                label="Resize video and brief"
+                className="flex-1"
+                first={videoPane}
+                second={briefPane}
+              />
+            }
+            second={
+              <Split
+                direction="horizontal"
+                id="work"
+                initial={0.6}
+                minFirst={150}
+                minSecond={120}
+                label="Resize editor and results"
+                className="flex-1"
+                first={editorPane}
+                second={resultsPane}
+              />
+            }
+          />
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Phone: content swaps, the tab bar is always the bottom row ───────── */
+  const tabs: Tab[] = ["watch", "brief", "code"];
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      {/* Mobile pane switcher */}
-      <div className="flex shrink-0 gap-1 border-b border-ink-900/10 bg-white px-3 py-2 lg:hidden">
-        {(["brief", "code"] as Pane[]).map((p) => (
+    <div className="flex min-h-0 flex-1 flex-col bg-ink-950">
+      <div className="min-h-0 flex-1 overflow-hidden">
+        {tab === "watch" && <div className="flex h-full flex-col">{videoPane}</div>}
+        {tab === "brief" && <div className="flex h-full flex-col">{briefPane}</div>}
+        {tab === "code" && (
+          <Split
+            direction="horizontal"
+            id="work-mobile"
+            initial={0.55}
+            minFirst={110}
+            minSecond={90}
+            label="Resize editor and results"
+            className="h-full"
+            first={editorPane}
+            second={resultsPane}
+          />
+        )}
+      </div>
+
+      <nav className="flex shrink-0 items-center gap-1 border-t border-white/[0.06] p-2">
+        {tabs.map((tb) => (
           <button
-            key={p}
-            onClick={() => setPane(p)}
-            className={`flex-1 rounded-lg px-3 py-1.5 text-xs font-medium ${
-              pane === p ? "bg-ink-950 text-white" : "text-ink-700"
+            key={tb}
+            onClick={() => setTab(tb)}
+            className={`label flex flex-1 items-center justify-center gap-1.5 rounded-md py-2 transition-colors ${
+              tab === tb ? "bg-white/[0.1] text-accent" : "text-ink-500 hover:text-zinc-300"
             }`}
           >
-            {p === "brief" ? "Brief" : "Code & results"}
+            <span aria-hidden className="text-[11px]">{tabIcon[tb]}</span>
+            {tb}
+            {tb === "code" && state.summary && (
+              <span className={`h-1.5 w-1.5 rounded-full ${state.summary.ok ? "bg-pass" : "bg-fail"}`} />
+            )}
           </button>
         ))}
-      </div>
-
-      <div className="grid min-h-0 flex-1 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)]">
-        {/* Brief */}
-        <section
-          className={`min-h-0 overflow-y-auto bg-white lg:block lg:border-r lg:border-ink-900/10 ${
-            pane === "brief" ? "block" : "hidden"
-          }`}
-        >
-          <div className="mx-auto max-w-2xl px-5 py-6 sm:px-8">
-            <VideoEmbed videoId={meta.video_id} start={meta.start} />
-            <div className="flex flex-wrap gap-1.5">
-              {meta.tags.map((t) => (
-                <span key={t} className="rounded-full bg-ink-900/[0.06] px-2 py-0.5 font-mono text-[10px] text-ink-700">
-                  {t}
-                </span>
-              ))}
-            </div>
-
-            <div className="mt-4">
-              <Writeup markdown={exercise.writeup} />
-            </div>
-
-            {meta.video_id && (
-              <a
-                href={youtubeUrl(meta.video_id, meta.start)}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="mt-8 flex items-center gap-3 rounded-xl border border-ink-900/10 p-3 transition hover:border-rose-300 hover:bg-rose-50/60"
-              >
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#FF0000] text-xs font-bold text-white">
-                  ▶
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-sm font-medium text-ink-950">Watch the lecture moment</span>
-                  <span className="block truncate text-xs text-ink-700">
-                    {meta.playlist} · jumps to {formatTimestamp(meta.start)}
-                  </span>
-                </span>
-              </a>
-            )}
-
-            <DataTable files={exercise.data} />
-
-            <p className="mt-8 border-t border-ink-900/10 pt-4 text-[11px] text-ink-700/70">
-              Exercise <code className="font-mono">{meta.id}</code> by{" "}
-              <a
-                className="underline decoration-dotted underline-offset-2"
-                href={`https://github.com/${meta.author}`}
-                target="_blank"
-                rel="noreferrer noopener"
-              >
-                @{meta.author}
-              </a>
-            </p>
-          </div>
-        </section>
-
-        {/* Code + results */}
-        <section
-          className={`min-h-0 grid-rows-[auto_minmax(0,1fr)] bg-paper lg:grid ${
-            pane === "code" ? "grid" : "hidden"
-          }`}
-        >
-          <div className="flex shrink-0 items-center gap-2 border-b border-ink-900/10 bg-white px-3 py-2">
-            <span className="font-mono text-[11px] text-ink-700">submission.py</span>
-            <div className="ml-auto flex items-center gap-1.5">
-              <button
-                onClick={reset}
-                className="rounded-lg px-2 py-1 text-xs text-ink-700 transition hover:bg-ink-900/[0.06]"
-              >
-                Reset
-              </button>
-              {busy ? (
-                <button
-                  onClick={cancel}
-                  className="flex h-8 items-center gap-1.5 rounded-lg bg-rose-600 px-3 text-xs font-semibold text-white transition hover:bg-rose-700"
-                >
-                  Stop
-                </button>
-              ) : (
-                <button
-                  onClick={doRun}
-                  className="flex h-8 items-center gap-1.5 rounded-lg bg-ink-950 px-3 text-xs font-semibold text-white transition hover:bg-ink-800"
-                >
-                  Run
-                  <kbd className="ml-0.5 hidden font-sans text-[10px] font-normal text-white/50 sm:inline">⌘↵</kbd>
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="grid min-h-0 grid-rows-[minmax(160px,1fr)_minmax(0,1fr)]">
-            <div className="min-h-0 overflow-hidden border-b border-ink-900/10 bg-white">
-              <Editor value={code} onChange={setCode} onRun={doRun} readOnly={busy} />
-            </div>
-            <div className="min-h-0 overflow-y-auto bg-paper">
-              <TestResults state={state} />
-            </div>
-          </div>
-        </section>
-      </div>
+      </nav>
     </div>
   );
 }

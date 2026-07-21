@@ -23,7 +23,6 @@ export default function App() {
     if (id) location.hash = `${HASH}${encodeURIComponent(id)}`;
   }, [id]);
 
-  // Boot the interpreter while the learner reads, so the first Run is not a cold wait.
   useEffect(() => {
     warmPyodide();
   }, []);
@@ -32,28 +31,19 @@ export default function App() {
 
   if (!exercises.length) {
     return (
-      <div className="grid h-full place-items-center p-8 text-center text-sm text-ink-700">
-        No exercises found in <code className="font-mono">content/</code>.
+      <div className="grid h-full place-items-center bg-ink-950 p-8 text-center text-sm text-ink-500">
+        No exercises found in content/.
       </div>
     );
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
-      <ExercisePicker
-        exercises={exercises}
-        currentId={exercise?.meta.id ?? null}
-        passed={passed}
-        onSelect={setId}
-      />
+    <div className="flex h-full min-h-0 flex-col bg-ink-950">
+      <ExercisePicker exercises={exercises} currentId={exercise?.meta.id ?? null} passed={passed} onSelect={setId} />
       {exercise ? (
-        <ExerciseWorkspace
-          key={exercise.meta.id}
-          exercise={exercise}
-          onPass={() => setPassed(loadPassed())}
-        />
+        <ExerciseWorkspace key={exercise.meta.id} exercise={exercise} onPass={() => setPassed(loadPassed())} />
       ) : (
-        <div className="grid flex-1 place-items-center text-sm text-ink-700">Exercise not found.</div>
+        <div className="grid flex-1 place-items-center text-sm text-ink-500">Exercise not found.</div>
       )}
     </div>
   );

@@ -2,15 +2,22 @@
 @tailwind components;
 @tailwind utilities;
 
-:root { color-scheme: light; }
-html, body, #root { height: 100%; }
-body { @apply bg-paper text-ink-900 antialiased; margin: 0; }
+:root {
+  color-scheme: light;
+  --accent: #b45309;
+}
 
-/* Writeup typography so markdown, math and tables behave. */
+html, body, #root { height: 100%; }
+/* The workspace is a fixed frame: panes scroll, the page never does. */
+body { @apply bg-ink-950 text-ink-900 antialiased; margin: 0; overflow: hidden; }
+
+/* ── Writeup typography: editorial serif titles, so the brief does not read
+      like a generic admin panel. ─────────────────────────────────────────── */
 .writeup { @apply text-[15px] leading-7 text-ink-800; }
 .writeup > * + * { @apply mt-4; }
-.writeup h1 { @apply text-2xl font-semibold tracking-tight text-ink-950 mt-0; }
-.writeup h2 { @apply text-lg font-semibold tracking-tight text-ink-950 mt-8; }
+.writeup h1 { @apply font-serif text-[26px] font-semibold leading-tight tracking-[-0.01em] text-ink-950 mt-0; }
+.writeup h2 { @apply font-serif text-xl font-semibold text-ink-950 mt-8; }
+.writeup h3 { @apply text-base font-semibold text-ink-950 mt-6; }
 .writeup p code, .writeup li code {
   @apply font-mono text-[0.85em] bg-ink-900/[0.06] text-ink-950 rounded px-1 py-0.5;
 }
@@ -20,16 +27,55 @@ body { @apply bg-paper text-ink-900 antialiased; margin: 0; }
 .writeup pre code { @apply bg-transparent p-0 text-inherit; }
 .writeup ul { @apply list-disc pl-5 space-y-1; }
 .writeup ol { @apply list-decimal pl-5 space-y-1; }
-.writeup blockquote { @apply border-l-2 border-ink-900/15 pl-4 italic text-ink-700; }
-.writeup a { @apply text-indigo-600 underline underline-offset-2; }
+.writeup blockquote { @apply border-l-2 border-accent/40 bg-accent-soft/40 rounded-r py-2 pl-4 pr-3 not-italic text-ink-800; }
+.writeup a { @apply text-accent underline underline-offset-2; }
 .writeup table { @apply w-full text-sm border-collapse; }
 .writeup thead th {
-  @apply text-left font-medium text-xs uppercase tracking-wide text-ink-700
+  @apply text-left font-medium text-[11px] uppercase tracking-wide text-ink-600
          border-b border-ink-900/15 px-3 py-2 whitespace-nowrap;
 }
 .writeup tbody td { @apply border-b border-ink-900/[0.07] px-3 py-2 align-top; }
 .writeup .katex-display { @apply overflow-x-auto overflow-y-hidden py-1; }
 
+/* small uppercase micro-label */
+.label { @apply font-mono text-[10px] font-medium uppercase tracking-[0.16em]; }
+
+/* ── Resize handles ───────────────────────────────────────────────────────
+   A thin line that widens and tints on hover/active. The whole element is the
+   hit target; pointer capture keeps the drag alive over the iframe/editor. ── */
+.handle { position: relative; flex: none; touch-action: none; z-index: 10; }
+.handle:focus-visible { outline: none; }
+.handle-v { width: 9px; cursor: col-resize; }
+.handle-h { height: 9px; cursor: row-resize; }
+.handle .grip { position: absolute; inset: 0; }
+.handle-v .grip::after,
+.handle-h .grip::after {
+  content: ""; position: absolute; background: rgba(23, 21, 15, 0.1);
+  transition: background-color 0.12s, width 0.12s, height 0.12s;
+}
+.handle-v .grip::after { top: 0; bottom: 0; left: 50%; width: 1px; transform: translateX(-50%); }
+.handle-h .grip::after { left: 0; right: 0; top: 50%; height: 1px; transform: translateY(-50%); }
+.handle:hover .grip::after,
+.handle[data-active="true"] .grip::after,
+.handle:focus-visible .grip::after { background: var(--accent); }
+.handle-v:hover .grip::after,
+.handle-v[data-active="true"] .grip::after,
+.handle-v:focus-visible .grip::after { width: 3px; }
+.handle-h:hover .grip::after,
+.handle-h[data-active="true"] .grip::after,
+.handle-h:focus-visible .grip::after { height: 3px; }
+
+/* While dragging, don't let the iframe or the editor swallow the pointer. */
+body[data-dragging] iframe,
+body[data-dragging] .cm-editor { pointer-events: none; }
+body[data-dragging] { user-select: none; }
+
+/* CodeMirror */
 .cm-editor { height: 100%; }
 .cm-editor .cm-scroller { @apply font-mono text-[13px] leading-6; }
 .cm-editor.cm-focused { outline: none !important; }
+
+/* slim scrollbars for the panes */
+.scroll-slim { scrollbar-width: thin; scrollbar-color: rgba(23,21,15,0.18) transparent; }
+.scroll-slim::-webkit-scrollbar { width: 9px; height: 9px; }
+.scroll-slim::-webkit-scrollbar-thumb { background: rgba(23,21,15,0.16); border-radius: 9px; border: 2px solid transparent; background-clip: content-box; }
