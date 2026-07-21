@@ -1,0 +1,9 @@
+id: warmup
+author: salehsargolzaee
+video_id: dQw4w9WgXcQ   # placeholder id
+start: 0
+concept: "Placeholder — warm-up"
+tags: [placeholder, python]
+playlist: "ORIE 5355 — People, Data, and Systems"
+runtime: pyodide
+packages: []

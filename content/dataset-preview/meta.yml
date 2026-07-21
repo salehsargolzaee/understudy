@@ -1,0 +1,9 @@
+id: dataset-preview
+author: salehsargolzaee
+video_id: dQw4w9WgXcQ   # placeholder id
+start: 0
+concept: "Placeholder — data + math rendering"
+tags: [placeholder, pandas, rendering]
+playlist: "ORIE 5355 — People, Data, and Systems"
+runtime: pyodide
+packages: [pandas]

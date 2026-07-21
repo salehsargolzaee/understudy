@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+html, body, #root { height: 100%; }
+body { @apply bg-paper text-ink-900 antialiased; margin: 0; }
+
+/* Writeup typography so markdown, math and tables behave. */
+.writeup { @apply text-[15px] leading-7 text-ink-800; }
+.writeup > * + * { @apply mt-4; }
+.writeup h1 { @apply text-2xl font-semibold tracking-tight text-ink-950 mt-0; }
+.writeup h2 { @apply text-lg font-semibold tracking-tight text-ink-950 mt-8; }
+.writeup p code, .writeup li code {
+  @apply font-mono text-[0.85em] bg-ink-900/[0.06] text-ink-950 rounded px-1 py-0.5;
+}
+.writeup pre {
+  @apply font-mono text-[13px] leading-6 bg-ink-950 text-zinc-100 rounded-xl p-4 overflow-x-auto;
+}
+.writeup pre code { @apply bg-transparent p-0 text-inherit; }
+.writeup ul { @apply list-disc pl-5 space-y-1; }
+.writeup ol { @apply list-decimal pl-5 space-y-1; }
+.writeup blockquote { @apply border-l-2 border-ink-900/15 pl-4 italic text-ink-700; }
+.writeup a { @apply text-indigo-600 underline underline-offset-2; }
+.writeup table { @apply w-full text-sm border-collapse; }
+.writeup thead th {
+  @apply text-left font-medium text-xs uppercase tracking-wide text-ink-700
+         border-b border-ink-900/15 px-3 py-2 whitespace-nowrap;
+}
+.writeup tbody td { @apply border-b border-ink-900/[0.07] px-3 py-2 align-top; }
+.writeup .katex-display { @apply overflow-x-auto overflow-y-hidden py-1; }
+
+.cm-editor { height: 100%; }
+.cm-editor .cm-scroller { @apply font-mono text-[13px] leading-6; }
+.cm-editor.cm-focused { outline: none !important; }
