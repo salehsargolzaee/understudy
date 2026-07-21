@@ -7,6 +7,7 @@ import { formatTimestamp, youtubeUrl } from "../lib/youtube";
 import DataTable from "./DataTable";
 import Editor from "./Editor";
 import TestResults from "./TestResults";
+import VideoEmbed from "./VideoEmbed";
 import Writeup from "./Writeup";
 
 type Pane = "brief" | "code";
@@ -75,6 +76,7 @@ export default function ExerciseWorkspace({ exercise, onPass }: { exercise: Exer
           }`}
         >
           <div className="mx-auto max-w-2xl px-5 py-6 sm:px-8">
+            <VideoEmbed videoId={meta.video_id} start={meta.start} />
             <div className="flex flex-wrap gap-1.5">
               {meta.tags.map((t) => (
                 <span key={t} className="rounded-full bg-ink-900/[0.06] px-2 py-0.5 font-mono text-[10px] text-ink-700">
