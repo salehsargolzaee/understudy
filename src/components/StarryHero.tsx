@@ -151,7 +151,7 @@ function paint(canvas: HTMLCanvasElement, seed: string) {
   ctx.fillRect(0, 0, W, H);
 }
 
-export default function StarryHero({ handle }: { handle: string }) {
+export default function StarryHero({ handle, label }: { handle: string; label?: string }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -174,7 +174,7 @@ export default function StarryHero({ handle }: { handle: string }) {
     <canvas
       ref={ref}
       role="img"
-      aria-label="This contributor's work rendered as a painted night sky"
+      aria-label={label ?? "This contributor's work rendered as a painted night sky"}
       className="block h-[280px] w-full sm:h-[340px]"
     />
   );

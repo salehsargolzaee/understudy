@@ -1,15 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import type { Exercise } from "../content";
 import { nightRailBg } from "../lib/nightRail";
+import { exploreHome } from "../lib/routes";
 import Brand from "./Brand";
-
 interface Props {
   exercises: Exercise[];
   currentId: string | null;
   passed: Record<string, { at: number }>;
   onSelect: (id: string) => void;
 }
-
 /**
  * The top rail. Dark, so the paper workspace below reads as the lit work
  * surface, and short so vertical space belongs to the panes.
@@ -19,7 +18,6 @@ export default function ExercisePicker({ exercises, currentId, passed, onSelect 
   const ref = useRef<HTMLDivElement>(null);
   const current = exercises.find((e) => e.meta.id === currentId);
   const done = exercises.filter((e) => passed[e.meta.id]).length;
-
   useEffect(() => {
     if (!open) return;
     const onDoc = (e: MouseEvent) => {
@@ -33,16 +31,24 @@ export default function ExercisePicker({ exercises, currentId, passed, onSelect 
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
-
   return (
     <header
       className="relative z-30 flex h-11 shrink-0 items-center gap-2.5 bg-ink-950 px-3"
       style={{ backgroundImage: nightRailBg(), backgroundSize: "cover" }}
     >
-      <span className="flex shrink-0 items-center gap-2 pr-1">
+      <a href={exploreHome} className="flex shrink-0 items-center gap-2 pr-1" title="Explore the catalog">
         <Brand />
-      </span>
-
+      </a>
+      <a
+        href={exploreHome}
+        title="Search and browse the whole catalog"
+        className="flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-[12px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.07] hover:text-white"
+      >
+        <span aria-hidden className="text-[11px] text-accent-bright">
+          ✦
+        </span>
+        <span className="hidden md:inline">Explore</span>
+      </a>
       <div className="relative min-w-0 flex-1 sm:max-w-sm" ref={ref}>
         <button
           onClick={() => setOpen((o) => !o)}
@@ -66,7 +72,6 @@ export default function ExercisePicker({ exercises, currentId, passed, onSelect 
             />
           </svg>
         </button>
-
         {open && (
           <ul
             role="listbox"
@@ -110,7 +115,6 @@ export default function ExercisePicker({ exercises, currentId, passed, onSelect 
           </ul>
         )}
       </div>
-
       <div className="ml-auto flex shrink-0 items-center gap-2.5">
         <span className="font-mono text-[10px] tabular-nums text-ink-500">
           {done}

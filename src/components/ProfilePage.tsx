@@ -5,8 +5,10 @@ import { getContributor } from "../lib/contributors";
 import type { ContributorProfile, CourseContribution } from "../lib/contributors";
 import { githubUrl } from "../lib/github";
 import { nightRailBg } from "../lib/nightRail";
+import { courseHash, exerciseHash, exploreHome, searchHash } from "../lib/routes";
 import Avatar from "./Avatar";
 import Brand from "./Brand";
+import ConceptChip from "./ConceptChip";
 import StarryHero from "./StarryHero";
 /**
  * Contributor profile: the public record of what a handle has authored.
@@ -14,7 +16,6 @@ import StarryHero from "./StarryHero";
  * Same visual grammar as the workspace: dark frame, one paper surface.
  */
 const PALETTE = ["#26418f", "#2f6b52", "#3f74c0", "#c39422", "#6b5b95"];
-const exerciseHash = (id: string) => `#/e/${encodeURIComponent(id)}`;
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
@@ -31,7 +32,6 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
     </section>
   );
 }
-
 /** Fields as orbits: each field is an arc around a star; its sweep is its
  *  share of this contributor's work. */
 function FieldOrbits({ fields, total }: { fields: { name: string; count: number }[]; total: number }) {
@@ -90,34 +90,33 @@ function FieldOrbits({ fields, total }: { fields: { name: string; count: number 
 }
 function ExerciseRow({ e }: { e: Exercise }) {
   return (
-    <li>
+    <li className="group relative flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-ink-900/[0.03]">
+      {/* full-row underlay: the whole row opens the exercise; the concept chips
+          sit above it and navigate independently */}
       <a
         href={exerciseHash(e.meta.id)}
-        className="group flex items-center gap-3 px-4 py-2.5 transition-colors hover:bg-ink-900/[0.03]"
-      >
-        <span className="min-w-0 flex-1">
-          <span className="block truncate text-[13px] font-medium text-ink-950">
-            {e.meta.concept || e.meta.id}
-          </span>
-          <span className="block truncate font-mono text-[10px] text-ink-500">{e.meta.id}</span>
+        className="absolute inset-0 z-0"
+        aria-label={e.meta.concept || e.meta.id}
+      />
+      <span className="min-w-0 flex-1">
+        <span className="block truncate text-[13px] font-medium text-ink-950">
+          {e.meta.concept || e.meta.id}
         </span>
-        {e.meta.demo && (
-          <span className="label hidden shrink-0 rounded bg-ink-900/[0.05] px-1.5 py-0.5 text-[9px] text-ink-500 sm:inline">
-            demo
-          </span>
-        )}
+        <span className="block truncate font-mono text-[10px] text-ink-500">{e.meta.id}</span>
+      </span>
+      {e.meta.demo && (
+        <span className="label hidden shrink-0 rounded bg-ink-900/[0.05] px-1.5 py-0.5 text-[9px] text-ink-500 sm:inline">
+          demo
+        </span>
+      )}
+      <span className="relative z-10 hidden shrink-0 items-center gap-1.5 md:flex">
         {e.meta.concepts.slice(0, 3).map((c) => (
-          <span
-            key={c}
-            className="hidden shrink-0 rounded-full bg-ink-900/[0.05] px-2 py-0.5 font-mono text-[9.5px] text-ink-600 md:inline"
-          >
-            {c}
-          </span>
+          <ConceptChip key={c} name={c} small />
         ))}
-        <span className="shrink-0 text-ink-500 transition-transform group-hover:translate-x-0.5" aria-hidden>
-          →
-        </span>
-      </a>
+      </span>
+      <span aria-hidden className="shrink-0 text-ink-500 transition-transform group-hover:translate-x-0.5">
+        →
+      </span>
     </li>
   );
 }
@@ -129,7 +128,15 @@ function CourseCard({ cc }: { cc: CourseContribution }) {
   return (
     <article>
       <header>
-        <h3 className="font-serif text-[20px] font-semibold leading-snug text-ink-950">{name}</h3>
+        <h3 className="font-serif text-[20px] font-semibold leading-snug text-ink-950">
+          {cc.course ? (
+            <a href={courseHash(cc.course.id)} title="View this course in the catalog" className="transition-colors hover:text-verd">
+              {name}
+            </a>
+          ) : (
+            name
+          )}
+        </h3>
         {/* a short brushstroke instead of a card border */}
         <div
           aria-hidden
@@ -235,16 +242,22 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
         title="Concepts taught"
         hint={`${profile.concepts.length} distinct${profile.untagged ? ` · ${profile.untagged} untagged` : ""}`}
       >
-        {/* concepts read as a line of thought, not a wall of capsules */}
+        {/* still a line of thought, but every concept is now visibly a door:
+            viridian link color, dotted underline, warms to gold on hover.
+            Tapping one runs the catalog search for that concept. */}
         <p className="max-w-2xl font-serif text-[18px] leading-8 text-ink-950">
           {profile.concepts.map((c, i) => (
             <span key={c.name}>
               {/* the separator carries real spaces so the line can wrap */}
               {i > 0 && <span className="text-accent">{" · "}</span>}
-              <span className="whitespace-nowrap">
+              <a
+                href={searchHash(c.name)}
+                title={`Search the catalog for “${c.name.replace(/-/g, " ")}”`}
+                className="whitespace-nowrap rounded-sm text-verd underline decoration-verd/40 decoration-dotted underline-offset-4 transition-colors hover:bg-accent-soft hover:text-ink-950 hover:decoration-accent/70"
+              >
                 {c.name.replace(/-/g, " ")}
                 {c.count > 1 && <sup className="ml-0.5 font-sans text-[10px] text-ink-600">{c.count}</sup>}
-              </span>
+              </a>
             </span>
           ))}
         </p>
@@ -301,16 +314,25 @@ export default function ProfilePage({ handle, backHref }: { handle: string; back
         className="flex h-11 shrink-0 items-center gap-2.5 bg-ink-950 px-3"
         style={{ backgroundImage: nightRailBg(), backgroundSize: "cover" }}
       >
-        <a href={backHref} className="flex shrink-0 items-center gap-2 pr-1" title="Back to exercises">
+        <a href={exploreHome} className="flex shrink-0 items-center gap-2 pr-1" title="Explore the catalog">
           <Brand />
         </a>
         <span className="label text-ink-600">Contributor profile</span>
-        <a
-          href={backHref}
-          className="ml-auto rounded-md px-2 py-1 text-[12px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.07] hover:text-white"
-        >
-          ← Back to exercises
-        </a>
+        <div className="ml-auto flex items-center gap-1">
+          <a
+            href={exploreHome}
+            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[12px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.07] hover:text-white"
+          >
+            <span aria-hidden className="text-[11px] text-accent-bright">✦</span>
+            <span className="hidden sm:inline">Explore</span>
+          </a>
+          <a
+            href={backHref}
+            className="rounded-md px-2 py-1 text-[12px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.07] hover:text-white"
+          >
+            ← Back
+          </a>
+        </div>
       </header>
       {/* The profile floats directly on the site's canvas — no framed surface. */}
       <div className="min-h-0 flex-1 overflow-y-auto scroll-slim">

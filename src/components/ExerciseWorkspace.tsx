@@ -9,6 +9,7 @@ import DataTable from "./DataTable";
 import Editor from "./Editor";
 import Pane from "./Pane";
 import Split from "./Split";
+import ConceptChip from "./ConceptChip";
 import TestResults from "./TestResults";
 import VideoEmbed from "./VideoEmbed";
 import Writeup from "./Writeup";
@@ -106,6 +107,14 @@ export default function ExerciseWorkspace({ exercise, onPass }: { exercise: Exer
       <article className="mx-auto max-w-2xl px-5 py-6 sm:px-7">
         <Writeup markdown={exercise.writeup} />
         <DataTable files={exercise.data} />
+        {meta.concepts.length > 0 && (
+          <div className="mt-8 flex flex-wrap items-center gap-1.5">
+            <span className="label mr-1.5 text-ink-600">Concepts</span>
+            {meta.concepts.map((c) => (
+              <ConceptChip key={c} name={c} />
+            ))}
+          </div>
+        )}
         <footer className="mt-10 flex flex-wrap items-center gap-3 border-t border-ink-900/[0.08] pt-4">
           <AuthorChip handle={meta.author} role="Exercise author" />
           <span className="ml-auto font-mono text-[10px] text-ink-500">
