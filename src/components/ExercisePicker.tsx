@@ -35,10 +35,8 @@ export default function ExercisePicker({ exercises, currentId, passed, onSelect 
   return (
     <header className="relative z-30 flex h-11 shrink-0 items-center gap-2.5 bg-ink-950 px-3">
       <span className="flex shrink-0 items-center gap-2 pr-1">
-        <span className="grid h-5 w-5 place-items-center rounded bg-accent font-serif text-[13px] font-semibold leading-none text-ink-950">
-          P
-        </span>
-        <span className="hidden font-serif text-[15px] tracking-tight text-zinc-100 sm:block">Practice</span>
+        <span className="h-4 w-4 rounded bg-accent" aria-hidden />
+        <span className="hidden font-serif text-[15px] tracking-tight text-zinc-100 sm:block">TBD</span>
       </span>
 
       <div className="relative min-w-0 flex-1 sm:max-w-sm" ref={ref}>
