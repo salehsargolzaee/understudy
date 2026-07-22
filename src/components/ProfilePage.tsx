@@ -99,10 +99,14 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
   const share = allExercises.length ? Math.round((total / allExercises.length) * 100) : 0;
   const fieldTotal = profile.fields.reduce((a, f) => a + f.count, 0) || 1;
   const stats = [
-    { label: "Exercises", value: total },
-    { label: "Courses", value: catalogued || profile.courses.length },
-    { label: "Concepts", value: profile.concepts.length },
-    { label: "Fields", value: profile.fields.length },
+    { label: "Exercises", value: total, hint: "Exercises you have authored." },
+    {
+      label: "Courses",
+      value: catalogued || profile.courses.length,
+      hint: "Distinct courses you have written at least one exercise for. It does not mean the course is finished.",
+    },
+    { label: "Concepts", value: profile.concepts.length, hint: "Distinct concept tags across your authored exercises." },
+    { label: "Fields", value: profile.fields.length, hint: "Distinct subject fields your exercises fall under." },
   ];
   return (
     <div className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
@@ -130,9 +134,15 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
       {/* headline numbers */}
       <section className="mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
         {stats.map((s) => (
-          <div key={s.label} className="rounded-xl border border-ink-900/[0.08] bg-white px-4 py-3">
+          <div
+            key={s.label}
+            title={s.hint}
+            className="cursor-help rounded-xl border border-ink-900/[0.08] bg-white px-4 py-3"
+          >
             <p className="font-serif text-[30px] font-semibold leading-none tabular-nums text-ink-950">{s.value}</p>
-            <p className="label mt-1.5 text-ink-500">{s.label}</p>
+            <p className="label mt-1.5 text-ink-500 underline decoration-dotted decoration-ink-900/20 underline-offset-2">
+              {s.label}
+            </p>
           </div>
         ))}
       </section>
