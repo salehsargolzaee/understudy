@@ -12,7 +12,7 @@ import StarryHero from "./StarryHero";
  * Contribution only — nothing here reads completion or practice data.
  * Same visual grammar as the workspace: dark frame, one paper surface.
  */
-const PALETTE = ["#b45309", "#2f7d55", "#3d5a80", "#7b4b94", "#946b2d", "#5b564c"];
+const PALETTE = ["#26418f", "#2f6b52", "#3f74c0", "#c79a3e", "#6b5b95", "#8a5a3c"];
 const exerciseHash = (id: string) => `#/e/${encodeURIComponent(id)}`;
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {

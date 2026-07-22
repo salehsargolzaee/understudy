@@ -41,16 +41,16 @@ export default function StarryHero({ handle, children }: { handle: string; child
         const dx = x - v.x;
         const dy = y - v.y;
         const d = Math.hypot(dx, dy) + 45;
-        ang += (Math.atan2(dy, dx) + Math.PI / 2) * ((v.s * 130) / d);
+        ang += (Math.atan2(dy, dx) + Math.PI / 2) * ((v.s * 180) / d);
       }
       return ang;
     };
     const strokes = [] as { d: string; color: string; w: number; o: number }[];
-    for (let i = 0; i < 115; i++) {
+    for (let i = 0; i < 300; i++) {
       let x = r() * W;
       let y = r() * H;
       const pts: [number, number][] = [[x, y]];
-      const steps = 4 + Math.floor(r() * 6);
+      const steps = 5 + Math.floor(r() * 8);
       for (let s = 0; s < steps; s++) {
         const a = field(x, y) + (r() - 0.5) * 0.5;
         x += Math.cos(a) * 16;
@@ -61,8 +61,8 @@ export default function StarryHero({ handle, children }: { handle: string; child
       strokes.push({
         d: "M" + pts.map((p) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" L"),
         color: pal[Math.floor(r() * pal.length)],
-        w: 1.5 + r() * 4,
-        o: 0.22 + r() * 0.42,
+        w: 2 + r() * 5.5,
+        o: 0.25 + r() * 0.45,
       });
     }
     const stars = [] as { x: number; y: number; glow: number; core: number }[];

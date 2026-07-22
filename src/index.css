@@ -11,6 +11,19 @@ html, body, #root { height: 100%; }
 /* The workspace is a fixed frame: panes scroll, the page never does. */
 body { @apply bg-ink-950 text-ink-900 antialiased; margin: 0; overflow: hidden; }
 
+/* Canvas grain over the whole app, so every surface reads as paper, not flat UI. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.05;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
 /* ── Writeup typography: editorial serif titles, so the brief does not read
       like a generic admin panel. ─────────────────────────────────────────── */
 .writeup { @apply text-[15px] leading-7 text-ink-800; }
