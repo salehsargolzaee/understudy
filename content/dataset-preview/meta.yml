@@ -7,3 +7,4 @@ tags: [placeholder, pandas, rendering]
 playlist: "ORIE 5355 — People, Data, and Systems"
 runtime: pyodide
 packages: [pandas]
+course: orie-5355

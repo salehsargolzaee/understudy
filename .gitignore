@@ -3,3 +3,9 @@ dist
 *.local
 .DS_Store
 *.tsbuildinfo
+
+# Session-2 throwaway demo fixture (demo exercises + demo course files). Delete with:
+#   rm -rf content/demo-* content/courses/karpathy-zth.yml content/courses/mit-6006.yml
+content/demo-*
+content/courses/karpathy-zth.yml
+content/courses/mit-6006.yml

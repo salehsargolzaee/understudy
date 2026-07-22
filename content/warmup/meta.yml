@@ -7,3 +7,5 @@ tags: [placeholder, python]
 playlist: "ORIE 5355 — People, Data, and Systems"
 runtime: pyodide
 packages: []
+course: orie-5355
+level: undergraduate
