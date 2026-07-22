@@ -18,11 +18,11 @@ export default {
           600: "#847d6f",
           500: "#a49c8d",
         },
-        paper: "#faf9f6",
+        paper: "#fbfaf1",
         // one restrained accent, used sparingly
         accent: {
-          DEFAULT: "#b45309",
-          soft: "#f4ead9",
+          DEFAULT: "#26418f",
+          soft: "#e6ebf5",
         },
         pass: "#2f7d55",
         fail: "#c0392b",

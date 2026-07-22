@@ -6,6 +6,7 @@ import type { ContributorProfile, CourseContribution } from "../lib/contributors
 import { githubUrl } from "../lib/github";
 import Avatar from "./Avatar";
 import Brand from "./Brand";
+import StarryHero from "./StarryHero";
 /**
  * Contributor profile: the public record of what a handle has authored.
  * Contribution only — nothing here reads completion or practice data.
@@ -116,27 +117,30 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
   ];
   return (
     <div className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
-      {/* identity */}
-      <header className="flex flex-wrap items-center gap-4">
-        <Avatar handle={profile.handle} px={72} />
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate font-serif text-[28px] font-semibold leading-tight tracking-[-0.01em] text-ink-950">
-            @{profile.handle}
-          </h1>
-          <p className="mt-0.5 text-[13px] leading-5 text-ink-700">
-            Contributor · {plural(total, "exercise")} across {plural(profile.videos, "video")} in {plural(catalogued || profile.courses.length, "course")}
-            {allExercises.length > 0 && <span className="text-ink-500"> · {share}% of everything on this site</span>}
-          </p>
+      {/* identity as a generated night sky of the contributor's work */}
+      <StarryHero handle={profile.handle}>
+        <div className="flex items-end gap-3">
+          <Avatar handle={profile.handle} px={52} dark />
+          <div className="min-w-0">
+            <h1 className="font-serif text-[30px] font-semibold leading-tight tracking-[-0.01em] text-[#fbf7ea] sm:text-[40px]">
+              @{profile.handle}
+            </h1>
+            <p className="mt-1 max-w-xl text-[13.5px] leading-6 text-[#cdd5e6]">
+              Turned {plural(profile.videos, "lecture")} into {plural(total, "exercise")}, across{" "}
+              {plural(catalogued || profile.courses.length, "course")} and {plural(profile.fields.length, "field")}.
+              {allExercises.length > 0 && <span className="text-[#9aa6c2]"> {share}% of everything here.</span>}{" "}
+              <a
+                href={githubUrl(profile.handle)}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="whitespace-nowrap font-medium text-[#f2d879] underline underline-offset-2"
+              >
+                GitHub ↗
+              </a>
+            </p>
+          </div>
         </div>
-        <a
-          href={githubUrl(profile.handle)}
-          target="_blank"
-          rel="noreferrer noopener"
-          className="shrink-0 rounded-md border border-ink-900/15 px-3 py-1.5 text-[12px] font-medium text-ink-800 transition-colors hover:border-accent/60 hover:bg-accent-soft/60 hover:text-ink-950"
-        >
-          GitHub ↗
-        </a>
-      </header>
+      </StarryHero>
       {/* headline numbers */}
       <section className="mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-5">
         {stats.map((s) => (
