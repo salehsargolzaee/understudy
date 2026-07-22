@@ -99,15 +99,19 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
   const share = allExercises.length ? Math.round((total / allExercises.length) * 100) : 0;
   const fieldTotal = profile.fields.reduce((a, f) => a + f.count, 0) || 1;
   const stats = [
-    { label: "Exercises", value: total, hint: "Exercises you have authored." },
+    { label: "Exercises", value: total, hint: "Exercises this contributor has authored." },
     {
       label: "Courses",
       value: catalogued || profile.courses.length,
-      hint: "Distinct courses you have written at least one exercise for. It does not mean the course is finished.",
+      hint: "Distinct courses this contributor has written at least one exercise for. It does not mean the course is finished.",
     },
-    { label: "Videos", value: profile.videos, hint: "Distinct lectures you have written at least one exercise for." },
-    { label: "Concepts", value: profile.concepts.length, hint: "Distinct concept tags across your authored exercises." },
-    { label: "Fields", value: profile.fields.length, hint: "Distinct subject fields your exercises fall under." },
+    {
+      label: "Videos",
+      value: profile.videos,
+      hint: "Distinct lectures this contributor has written at least one exercise for.",
+    },
+    { label: "Concepts", value: profile.concepts.length, hint: "Distinct concept tags across their exercises." },
+    { label: "Fields", value: profile.fields.length, hint: "Distinct subject fields their exercises fall under." },
   ];
   return (
     <div className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
@@ -135,15 +139,24 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
       {/* headline numbers */}
       <section className="mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-5">
         {stats.map((s) => (
-          <div
-            key={s.label}
-            title={s.hint}
-            className="cursor-help rounded-xl border border-ink-900/[0.08] bg-white px-4 py-3"
-          >
+          <div key={s.label} className="group relative rounded-xl border border-ink-900/[0.08] bg-white px-4 py-3">
             <p className="font-serif text-[30px] font-semibold leading-none tabular-nums text-ink-950">{s.value}</p>
-            <p className="label mt-1.5 text-ink-500 underline decoration-dotted decoration-ink-900/20 underline-offset-2">
+            <p className="label mt-1.5 flex items-center gap-1 text-ink-500">
               {s.label}
+              <span
+                aria-hidden
+                className="grid h-3 w-3 place-items-center rounded-full border border-ink-900/25 font-sans text-[8px] font-bold leading-none text-ink-500/80"
+              >
+                i
+              </span>
             </p>
+            <span
+              role="tooltip"
+              className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden w-max max-w-[220px] -translate-x-1/2 rounded-lg bg-ink-950 px-3 py-2 text-left text-[11px] font-normal normal-case leading-snug tracking-normal text-zinc-100 shadow-lg group-hover:block"
+            >
+              {s.hint}
+              <span className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-ink-950" />
+            </span>
           </div>
         ))}
       </section>
