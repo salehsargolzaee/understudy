@@ -80,7 +80,7 @@ export default function TestResults({ state }: { state: RunState }) {
   return (
     <div className="space-y-4 p-4">
       {crash && (
-        <div className="overflow-hidden rounded-xl border border-accent/40 bg-accent-soft/50">
+        <div className="overflow-hidden rounded-xl border border-accent/50 bg-ink-900/[0.045]">
           <div className="p-3">
             <p className="text-sm font-semibold text-ink-950">Could not run your tests</p>
             <p className="mt-0.5 break-words text-xs text-ink-800">{crash.message}</p>

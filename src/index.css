@@ -27,7 +27,7 @@ body { @apply bg-paper text-ink-900 antialiased; margin: 0; overflow: hidden; }
 .writeup pre code { @apply bg-transparent p-0 text-inherit; }
 .writeup ul { @apply list-disc pl-5 space-y-1; }
 .writeup ol { @apply list-decimal pl-5 space-y-1; }
-.writeup blockquote { @apply border-l-2 border-accent/50 bg-accent-soft/40 rounded-r py-2 pl-4 pr-3 not-italic text-ink-800; }
+.writeup blockquote { @apply border-l-2 border-accent/60 bg-ink-900/[0.045] rounded-r py-2 pl-4 pr-3 not-italic text-ink-800; }
 .writeup a { @apply text-verd underline underline-offset-2; }
 .writeup table { @apply w-full text-sm border-collapse; }
 .writeup thead th {

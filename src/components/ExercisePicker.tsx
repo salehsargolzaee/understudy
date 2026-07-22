@@ -48,14 +48,14 @@ export default function ExercisePicker({ exercises, currentId, passed, onSelect 
           onClick={() => setOpen((o) => !o)}
           aria-haspopup="listbox"
           aria-expanded={open}
-          className="group flex w-full items-center gap-2 rounded-md px-2 py-1 text-left transition-colors hover:bg-white/[0.07]"
+          className="group flex w-full items-center gap-2 rounded-lg bg-white/[0.08] py-1.5 pl-3 pr-2 text-left shadow-sm ring-1 ring-white/[0.16] transition-colors hover:bg-white/[0.13] hover:ring-white/[0.26]"
         >
           {current && passed[current.meta.id] && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-pass" />}
           <span className="min-w-0 flex-1 truncate text-[13px] font-medium text-zinc-100">
             {current?.meta.concept || current?.meta.id || "Pick an exercise"}
           </span>
           <svg
-            className={`h-3.5 w-3.5 shrink-0 text-ink-500 transition-transform ${open ? "rotate-180" : ""}`}
+            className={`h-3.5 w-3.5 shrink-0 text-accent-bright transition-transform ${open ? "rotate-180" : ""}`}
             viewBox="0 0 20 20"
             fill="currentColor"
           >
