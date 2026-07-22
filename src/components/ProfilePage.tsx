@@ -5,6 +5,7 @@ import { getContributor } from "../lib/contributors";
 import type { ContributorProfile, CourseContribution } from "../lib/contributors";
 import { githubUrl } from "../lib/github";
 import Avatar from "./Avatar";
+import Brand from "./Brand";
 /**
  * Contributor profile: the public record of what a handle has authored.
  * Contribution only — nothing here reads completion or practice data.
@@ -258,8 +259,7 @@ export default function ProfilePage({ handle, backHref }: { handle: string; back
     <div className="flex h-full min-h-0 flex-col bg-ink-950">
       <header className="flex h-11 shrink-0 items-center gap-2.5 px-3">
         <a href={backHref} className="flex shrink-0 items-center gap-2 pr-1" title="Back to exercises">
-          <span className="h-4 w-4 rounded bg-accent" aria-hidden />
-          <span className="hidden font-serif text-[15px] tracking-tight text-zinc-100 sm:block">TBD</span>
+          <Brand />
         </a>
         <span className="label text-ink-600">Contributor profile</span>
         <a
