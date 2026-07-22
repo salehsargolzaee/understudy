@@ -144,9 +144,9 @@ function paint(canvas: HTMLCanvasElement, seed: string) {
   // the night dissolves into the site's paper
   ctx.globalAlpha = 1;
   const fade = ctx.createLinearGradient(0, H * 0.45, 0, H);
-  fade.addColorStop(0, "rgba(251,250,241,0)");
-  fade.addColorStop(0.75, "rgba(251,250,241,0.55)");
-  fade.addColorStop(1, "rgba(251,250,241,1)");
+  fade.addColorStop(0, "rgba(238,240,246,0)");
+  fade.addColorStop(0.75, "rgba(238,240,246,0.55)");
+  fade.addColorStop(1, "rgba(238,240,246,1)");
   ctx.fillStyle = fade;
   ctx.fillRect(0, 0, W, H);
 }

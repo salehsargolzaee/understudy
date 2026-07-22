@@ -4,7 +4,7 @@
 
 :root {
   color-scheme: light;
-  --accent: #26418f;
+  --accent: #c39422;
 }
 
 html, body, #root { height: 100%; }
@@ -27,8 +27,8 @@ body { @apply bg-paper text-ink-900 antialiased; margin: 0; overflow: hidden; }
 .writeup pre code { @apply bg-transparent p-0 text-inherit; }
 .writeup ul { @apply list-disc pl-5 space-y-1; }
 .writeup ol { @apply list-decimal pl-5 space-y-1; }
-.writeup blockquote { @apply border-l-2 border-accent/40 bg-accent-soft/40 rounded-r py-2 pl-4 pr-3 not-italic text-ink-800; }
-.writeup a { @apply text-accent underline underline-offset-2; }
+.writeup blockquote { @apply border-l-2 border-accent/50 bg-accent-soft/40 rounded-r py-2 pl-4 pr-3 not-italic text-ink-800; }
+.writeup a { @apply text-verd underline underline-offset-2; }
 .writeup table { @apply w-full text-sm border-collapse; }
 .writeup thead th {
   @apply text-left font-medium text-[11px] uppercase tracking-wide text-ink-600
@@ -50,7 +50,7 @@ body { @apply bg-paper text-ink-900 antialiased; margin: 0; overflow: hidden; }
 .handle .grip { position: absolute; inset: 0; }
 .handle-v .grip::after,
 .handle-h .grip::after {
-  content: ""; position: absolute; background: rgba(23, 21, 15, 0.1);
+  content: ""; position: absolute; background: rgba(16,22,46, 0.1);
   transition: background-color 0.12s, width 0.12s, height 0.12s;
 }
 .handle-v .grip::after { top: 0; bottom: 0; left: 50%; width: 1px; transform: translateX(-50%); }
@@ -76,6 +76,6 @@ body[data-dragging] { user-select: none; }
 .cm-editor.cm-focused { outline: none !important; }
 
 /* slim scrollbars for the panes */
-.scroll-slim { scrollbar-width: thin; scrollbar-color: rgba(23,21,15,0.18) transparent; }
+.scroll-slim { scrollbar-width: thin; scrollbar-color: rgba(16,22,46,0.18) transparent; }
 .scroll-slim::-webkit-scrollbar { width: 9px; height: 9px; }
-.scroll-slim::-webkit-scrollbar-thumb { background: rgba(23,21,15,0.16); border-radius: 9px; border: 2px solid transparent; background-clip: content-box; }
+.scroll-slim::-webkit-scrollbar-thumb { background: rgba(16,22,46,0.16); border-radius: 9px; border: 2px solid transparent; background-clip: content-box; }

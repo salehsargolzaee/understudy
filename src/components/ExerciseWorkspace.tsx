@@ -118,7 +118,7 @@ export default function ExerciseWorkspace({ exercise, onPass }: { exercise: Exer
 
   const editorActions = (
     <>
-      <span className={`label mr-1 text-pass transition-opacity duration-500 ${saved ? "opacity-100" : "opacity-0"}`}>
+      <span className={`label mr-1 text-verd transition-opacity duration-500 ${saved ? "opacity-100" : "opacity-0"}`}>
         saved
       </span>
       <button
@@ -132,7 +132,7 @@ export default function ExerciseWorkspace({ exercise, onPass }: { exercise: Exer
         <button
           onClick={cancel}
           title="Stop (Esc)"
-          className="flex h-7 items-center gap-1.5 rounded-md bg-fail px-3 text-[11px] font-semibold text-white transition hover:brightness-110 active:scale-[.97]"
+          className="flex h-7 items-center gap-1.5 rounded-full bg-fail px-3.5 text-[11px] font-semibold text-white transition hover:brightness-110 active:scale-[.97]"
         >
           <Stop c="h-2.5 w-2.5" /> Stop
         </button>
@@ -140,10 +140,10 @@ export default function ExerciseWorkspace({ exercise, onPass }: { exercise: Exer
         <button
           onClick={doRun}
           title="Run tests (⌘/Ctrl + Enter)"
-          className="flex h-7 items-center gap-1.5 rounded-md bg-ink-950 px-3 text-[11px] font-semibold text-white transition hover:bg-ink-800 active:scale-[.97]"
+          className="flex h-7 items-center gap-1.5 rounded-full bg-accent px-3.5 text-[11px] font-bold text-ink-950 shadow-sm transition hover:bg-accent-bright active:scale-[.97]"
         >
-          <Play c="h-2.5 w-2.5 text-accent" /> Run
-          <kbd className="ml-0.5 hidden font-sans text-[9px] font-normal text-white/40 sm:inline">⌘↵</kbd>
+          <Play c="h-2.5 w-2.5" /> Run
+          <kbd className="ml-0.5 hidden font-sans text-[9px] font-normal text-ink-950/50 sm:inline">⌘↵</kbd>
         </button>
       )}
     </>

@@ -4,6 +4,7 @@ import type { Exercise } from "../content";
 import { getContributor } from "../lib/contributors";
 import type { ContributorProfile, CourseContribution } from "../lib/contributors";
 import { githubUrl } from "../lib/github";
+import { nightRailBg } from "../lib/nightRail";
 import Avatar from "./Avatar";
 import Brand from "./Brand";
 import StarryHero from "./StarryHero";
@@ -12,18 +13,79 @@ import StarryHero from "./StarryHero";
  * Contribution only — nothing here reads completion or practice data.
  * Same visual grammar as the workspace: dark frame, one paper surface.
  */
-const PALETTE = ["#26418f", "#2f6b52", "#3f74c0", "#c79a3e", "#6b5b95", "#8a5a3c"];
+const PALETTE = ["#26418f", "#2f6b52", "#3f74c0", "#c39422", "#6b5b95"];
 const exerciseHash = (id: string) => `#/e/${encodeURIComponent(id)}`;
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
 function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
-    <section className="mt-10">
+    <section className="mt-12">
       <div className="flex items-baseline gap-2">
-        <h2 className="label text-ink-600">{title}</h2>
-        {hint && <span className="font-mono text-[10px] text-ink-500">{hint}</span>}
+        {/* a starlight mark leads each section so the page scans */}
+        <span aria-hidden className="text-[11px] leading-none text-accent">
+          ✦
+        </span>
+        <h2 className="label text-[11px] text-ink-800">{title}</h2>
+        {hint && <span className="font-mono text-[10px] text-ink-600">{hint}</span>}
       </div>
-      <div className="mt-3">{children}</div>
+      <div className="mt-4">{children}</div>
     </section>
+  );
+}
+
+/** Fields as orbits: each field is an arc around a star; its sweep is its
+ *  share of this contributor's work. */
+function FieldOrbits({ fields, total }: { fields: { name: string; count: number }[]; total: number }) {
+  const shown = fields.slice(0, 5);
+  const size = 260;
+  const c = size / 2;
+  const arc = (i: number, pct: number) => {
+    const rr = 42 + i * 26;
+    const start = (140 * Math.PI) / 180;
+    const sweep = Math.max(0.5, pct * 5.2); // radians, ~298° for 100%
+    const end = start + sweep;
+    const x1 = c + rr * Math.cos(start);
+    const y1 = c + rr * Math.sin(start);
+    const x2 = c + rr * Math.cos(end);
+    const y2 = c + rr * Math.sin(end);
+    return `M ${x1.toFixed(1)} ${y1.toFixed(1)} A ${rr} ${rr} 0 ${sweep > Math.PI ? 1 : 0} 1 ${x2.toFixed(1)} ${y2.toFixed(1)}`;
+  };
+  return (
+    <div className="flex flex-wrap items-center gap-x-10 gap-y-6">
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden className="shrink-0">
+        {shown.map((f, i) => (
+          <circle key={`t-${f.name}`} cx={c} cy={c} r={42 + i * 26} fill="none" stroke="#10162e" strokeOpacity="0.07" strokeWidth="1" />
+        ))}
+        {shown.map((f, i) => (
+          <path
+            key={f.name}
+            d={arc(i, f.count / total)}
+            fill="none"
+            stroke={PALETTE[i % PALETTE.length]}
+            strokeWidth="13"
+            strokeLinecap="round"
+            opacity="0.9"
+          />
+        ))}
+        {/* the star at the centre of the orbits */}
+        <circle cx={c} cy={c} r="17" fill="#c39422" opacity="0.16" />
+        <circle cx={c} cy={c} r="9" fill="#e0b64a" opacity="0.45" />
+        <circle cx={c} cy={c} r="4" fill="#f6e29b" />
+      </svg>
+      <ul className="min-w-[220px] flex-1 space-y-3">
+        {shown.map((f, i) => (
+          <li key={f.name} className="flex items-center gap-2.5">
+            <span className="h-3 w-3 shrink-0 rounded-full" style={{ background: PALETTE[i % PALETTE.length] }} aria-hidden />
+            <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-ink-900">{f.name}</span>
+            <span className="shrink-0 font-mono text-[11.5px] tabular-nums text-ink-700">
+              {f.count} · {Math.round((f.count / total) * 100)}%
+            </span>
+          </li>
+        ))}
+        {fields.length > shown.length && (
+          <li className="text-[11px] text-ink-600">+ {fields.length - shown.length} more fields</li>
+        )}
+      </ul>
+    </div>
   );
 }
 function ExerciseRow({ e }: { e: Exercise }) {
@@ -72,9 +134,9 @@ function CourseCard({ cc }: { cc: CourseContribution }) {
         <div
           aria-hidden
           className="mt-1.5 h-[3px] w-12 rounded-full"
-          style={{ background: "linear-gradient(90deg, #26418f, #2f6b52)" }}
+          style={{ background: "linear-gradient(90deg, #26418f, #c39422)" }}
         />
-        <p className="mt-2 text-[12.5px] text-ink-600">
+        <p className="mt-2 text-[12.5px] text-ink-700">
           {[subtitle, cc.course?.level, cc.course?.field, plural(cc.exercises.length, "exercise")]
             .filter(Boolean)
             .join(" · ")}
@@ -140,7 +202,7 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
           {stats.map((s) => (
             <div key={s.label} className="group relative">
               <p className="font-serif text-[34px] font-semibold leading-none tabular-nums text-ink-950">{s.value}</p>
-              <p className="label mt-1.5 flex items-center gap-1 text-ink-500">
+              <p className="label mt-1.5 flex items-center gap-1 text-ink-700">
                 {s.label}
                 <span
                   aria-hidden
@@ -161,33 +223,9 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
         </section>
       {/* spread across fields */}
       <Section title="Across fields">
-        {/* each field is a brushstroke; its length is its share of the work */}
-        <div className="max-w-xl space-y-3.5">
-          {profile.fields.map((f, i) => {
-            const pct = Math.round((f.count / fieldTotal) * 100);
-            return (
-              <div key={f.name}>
-                <div className="flex items-baseline justify-between gap-3 text-[13px]">
-                  <span className="min-w-0 truncate text-ink-800">{f.name}</span>
-                  <span className="shrink-0 font-mono text-[11px] tabular-nums text-ink-500">
-                    {f.count} · {pct}%
-                  </span>
-                </div>
-                <div
-                  className="mt-1.5 h-[7px] rounded-full"
-                  style={{
-                    width: `${pct}%`,
-                    minWidth: "3rem",
-                    background: `linear-gradient(90deg, ${PALETTE[i % PALETTE.length]}, ${PALETTE[(i + 2) % PALETTE.length]})`,
-                    opacity: 0.85,
-                  }}
-                />
-              </div>
-            );
-          })}
-        </div>
+        <FieldOrbits fields={profile.fields} total={fieldTotal} />
         {profile.levels.length > 0 && (
-          <p className="mt-4 font-mono text-[11px] text-ink-500">
+          <p className="mt-5 font-mono text-[11px] text-ink-700">
             Levels: {profile.levels.map((l) => `${l.name} ×${l.count}`).join(" · ")}
           </p>
         )}
@@ -198,20 +236,20 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
         hint={`${profile.concepts.length} distinct${profile.untagged ? ` · ${profile.untagged} untagged` : ""}`}
       >
         {/* concepts read as a line of thought, not a wall of capsules */}
-        <p className="max-w-2xl font-serif text-[17px] leading-8 text-ink-800">
+        <p className="max-w-2xl font-serif text-[18px] leading-8 text-ink-950">
           {profile.concepts.map((c, i) => (
             <span key={c.name}>
               {/* the separator carries real spaces so the line can wrap */}
-              {i > 0 && <span className="text-ink-900/25">{" · "}</span>}
+              {i > 0 && <span className="text-accent">{" · "}</span>}
               <span className="whitespace-nowrap">
                 {c.name.replace(/-/g, " ")}
-                {c.count > 1 && <sup className="ml-0.5 font-sans text-[10px] text-ink-500">{c.count}</sup>}
+                {c.count > 1 && <sup className="ml-0.5 font-sans text-[10px] text-ink-600">{c.count}</sup>}
               </span>
             </span>
           ))}
         </p>
         {profile.untagged > 0 && (
-          <p className="mt-3 text-[11px] text-ink-500">
+          <p className="mt-3 text-[11.5px] text-ink-700">
             {profile.untagged} exercise{profile.untagged > 1 ? "s" : ""} not tagged with concepts yet.
           </p>
         )}
@@ -224,8 +262,8 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
           ))}
         </div>
       </Section>
-      <footer className="mt-12 border-t border-ink-900/[0.08] pt-4">
-        <p className="text-[12px] text-ink-500">
+      <footer className="mt-14 border-t border-ink-900/10 pt-4">
+        <p className="text-[12px] text-ink-700">
           Everything above was authored and contributed by @{profile.handle}. Authoring exercises is how this record
           grows.
         </p>
@@ -259,7 +297,10 @@ export default function ProfilePage({ handle, backHref }: { handle: string; back
   const profile = useMemo(() => getContributor(handle), [handle]);
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="flex h-11 shrink-0 items-center gap-2.5 bg-ink-950 px-3">
+      <header
+        className="flex h-11 shrink-0 items-center gap-2.5 bg-ink-950 px-3"
+        style={{ backgroundImage: nightRailBg(), backgroundSize: "cover" }}
+      >
         <a href={backHref} className="flex shrink-0 items-center gap-2 pr-1" title="Back to exercises">
           <Brand />
         </a>

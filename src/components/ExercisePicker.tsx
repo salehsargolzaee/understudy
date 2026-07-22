@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import type { Exercise } from "../content";
+import { nightRailBg } from "../lib/nightRail";
 import Brand from "./Brand";
 
 interface Props {
@@ -34,7 +35,10 @@ export default function ExercisePicker({ exercises, currentId, passed, onSelect 
   }, [open]);
 
   return (
-    <header className="relative z-30 flex h-11 shrink-0 items-center gap-2.5 bg-ink-950 px-3">
+    <header
+      className="relative z-30 flex h-11 shrink-0 items-center gap-2.5 bg-ink-950 px-3"
+      style={{ backgroundImage: nightRailBg(), backgroundSize: "cover" }}
+    >
       <span className="flex shrink-0 items-center gap-2 pr-1">
         <Brand />
       </span>

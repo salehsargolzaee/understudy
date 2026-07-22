@@ -9,23 +9,29 @@ export default {
         mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
       },
       colors: {
-        // warm neutral ink scale
+        // nocturne system, drawn from the painting: cool indigo ink on moonstone
         ink: {
-          950: "#17150f",
-          900: "#211e17",
-          800: "#33302a",
-          700: "#5b564c",
-          600: "#847d6f",
-          500: "#a49c8d",
+          950: "#10162e",
+          900: "#1a2142",
+          800: "#2a3157",
+          700: "#4a5178",
+          600: "#656d96",
+          500: "#8b91b3",
         },
-        paper: "#fbfaf1",
-        // one restrained accent, used sparingly
+        paper: "#eef0f6",
+        // starlight gold: the accent for actions and marks
         accent: {
-          DEFAULT: "#26418f",
-          soft: "#e6ebf5",
+          DEFAULT: "#c39422",
+          bright: "#e0b64a",
+          soft: "#f3ead0",
         },
-        pass: "#2f7d55",
-        fail: "#c0392b",
+        // cypress viridian: links and secondary accents on light ground
+        verd: {
+          DEFAULT: "#256b52",
+          soft: "#dfeae4",
+        },
+        pass: "#2b7d55",
+        fail: "#c13a2e",
       },
     },
   },
