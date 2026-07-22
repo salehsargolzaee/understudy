@@ -105,6 +105,7 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
       value: catalogued || profile.courses.length,
       hint: "Distinct courses you have written at least one exercise for. It does not mean the course is finished.",
     },
+    { label: "Videos", value: profile.videos, hint: "Distinct lectures you have written at least one exercise for." },
     { label: "Concepts", value: profile.concepts.length, hint: "Distinct concept tags across your authored exercises." },
     { label: "Fields", value: profile.fields.length, hint: "Distinct subject fields your exercises fall under." },
   ];
@@ -118,7 +119,7 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
             @{profile.handle}
           </h1>
           <p className="mt-0.5 text-[13px] leading-5 text-ink-700">
-            Contributor · {plural(total, "exercise")} across {plural(catalogued || profile.courses.length, "course")}
+            Contributor · {plural(total, "exercise")} across {plural(profile.videos, "video")} in {plural(catalogued || profile.courses.length, "course")}
             {allExercises.length > 0 && <span className="text-ink-500"> · {share}% of everything on this site</span>}
           </p>
         </div>
@@ -132,7 +133,7 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
         </a>
       </header>
       {/* headline numbers */}
-      <section className="mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+      <section className="mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-5">
         {stats.map((s) => (
           <div
             key={s.label}

@@ -18,6 +18,8 @@ export interface ContributorProfile {
   fields: Counted[];
   levels: Counted[];
   courses: CourseContribution[];
+  /** Distinct lecture videos this person has authored an exercise for. */
+  videos: number;
   /** Authored exercises that carry no concept tags yet. */
   untagged: number;
 }
@@ -61,6 +63,7 @@ export function getContributor(handle: string): ContributorProfile | null {
     fields: tally(mine.map(fieldOf)),
     levels: tally(mine.map(levelOf).filter(Boolean)),
     courses: courseContribs,
+    videos: new Set(mine.map((e) => e.meta.video_id).filter(Boolean)).size,
     untagged: mine.filter((e) => !e.meta.concepts.length).length,
   };
 }
