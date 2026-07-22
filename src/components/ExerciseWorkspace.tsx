@@ -109,7 +109,7 @@ export default function ExerciseWorkspace({ exercise, onPass }: { exercise: Exer
         <footer className="mt-10 flex flex-wrap items-center gap-3 border-t border-ink-900/[0.08] pt-4">
           <AuthorChip handle={meta.author} role="Exercise author" />
           <span className="ml-auto font-mono text-[10px] text-ink-500">
-            {meta.id} · {meta.runtime}
+            {meta.id}
           </span>
         </footer>
       </article>
