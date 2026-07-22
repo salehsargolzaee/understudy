@@ -65,29 +65,22 @@ function CourseCard({ cc }: { cc: CourseContribution }) {
     ? [cc.course.institution, cc.course.creator].filter(Boolean).join(" · ")
     : "Exercises that predate the course catalogue";
   return (
-    <article className="overflow-hidden rounded-xl border border-ink-900/[0.08] bg-white">
-      <header className="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-ink-900/[0.06] px-4 py-3">
-        <div className="min-w-0 flex-1">
-          <h3 className="truncate font-serif text-[17px] font-semibold leading-snug text-ink-950">{name}</h3>
-          {subtitle && <p className="truncate text-[12px] text-ink-600">{subtitle}</p>}
-        </div>
-        <span className="flex shrink-0 items-center gap-1.5">
-          {cc.course?.level && (
-            <span className="label rounded bg-ink-900/[0.05] px-1.5 py-0.5 text-[9px] text-ink-600">
-              {cc.course.level}
-            </span>
-          )}
-          {cc.course?.field && (
-            <span className="label hidden rounded bg-ink-900/[0.05] px-1.5 py-0.5 text-[9px] text-ink-600 sm:inline">
-              {cc.course.field}
-            </span>
-          )}
-          <span className="label rounded bg-accent-soft px-1.5 py-0.5 text-[9px] text-accent">
-            {plural(cc.exercises.length, "exercise")}
-          </span>
-        </span>
+    <article>
+      <header>
+        <h3 className="font-serif text-[20px] font-semibold leading-snug text-ink-950">{name}</h3>
+        {/* a short brushstroke instead of a card border */}
+        <div
+          aria-hidden
+          className="mt-1.5 h-[3px] w-12 rounded-full"
+          style={{ background: "linear-gradient(90deg, #26418f, #2f6b52)" }}
+        />
+        <p className="mt-2 text-[12.5px] text-ink-600">
+          {[subtitle, cc.course?.level, cc.course?.field, plural(cc.exercises.length, "exercise")]
+            .filter(Boolean)
+            .join(" · ")}
+        </p>
       </header>
-      <ul className="divide-y divide-ink-900/[0.05]">
+      <ul className="mt-2 divide-y divide-ink-900/[0.06]">
         {cc.exercises.map((e) => (
           <ExerciseRow key={e.meta.id} e={e} />
         ))}
@@ -116,83 +109,85 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
     { label: "Fields", value: profile.fields.length, hint: "Distinct subject fields their exercises fall under." },
   ];
   return (
-    <div className="mx-auto max-w-3xl px-5 py-8 sm:px-8 sm:py-10">
-      {/* identity as a generated night sky of the contributor's work */}
-      <StarryHero handle={profile.handle}>
-        <div className="flex items-end gap-3">
-          <Avatar handle={profile.handle} px={52} dark />
-          <div className="min-w-0">
-            <h1 className="font-serif text-[30px] font-semibold leading-tight tracking-[-0.01em] text-[#fbf7ea] sm:text-[40px]">
-              @{profile.handle}
-            </h1>
-            <p className="mt-1 max-w-xl text-[13.5px] leading-6 text-[#cdd5e6]">
-              Turned {plural(profile.videos, "lecture")} into {plural(total, "exercise")}, across{" "}
-              {plural(catalogued || profile.courses.length, "course")} and {plural(profile.fields.length, "field")}.
-              {allExercises.length > 0 && <span className="text-[#9aa6c2]"> {share}% of everything here.</span>}{" "}
-              <a
-                href={githubUrl(profile.handle)}
-                target="_blank"
-                rel="noreferrer noopener"
-                className="whitespace-nowrap font-medium text-[#f2d879] underline underline-offset-2"
-              >
-                GitHub ↗
-              </a>
-            </p>
-          </div>
-        </div>
-      </StarryHero>
-      {/* headline numbers */}
-      <section className="mt-8 grid grid-cols-2 gap-2.5 sm:grid-cols-5">
-        {stats.map((s) => (
-          <div key={s.label} className="group relative rounded-xl border border-ink-900/[0.08] bg-white px-4 py-3">
-            <p className="font-serif text-[30px] font-semibold leading-none tabular-nums text-ink-950">{s.value}</p>
-            <p className="label mt-1.5 flex items-center gap-1 text-ink-500">
-              {s.label}
-              <span
-                aria-hidden
-                className="grid h-3 w-3 place-items-center rounded-full border border-ink-900/25 font-sans text-[8px] font-bold leading-none text-ink-500/80"
-              >
-                i
-              </span>
-            </p>
-            <span
-              role="tooltip"
-              className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden w-max max-w-[220px] -translate-x-1/2 rounded-lg bg-ink-950 px-3 py-2 text-left text-[11px] font-normal normal-case leading-snug tracking-normal text-zinc-100 shadow-lg group-hover:block"
+    <div>
+      {/* The contributor's work as a night sky, dissolving into the site's canvas */}
+      <StarryHero handle={profile.handle} />
+      <div className="mx-auto max-w-3xl px-5 pb-16 sm:px-8">
+        {/* identity emerges where the night meets the paper */}
+        <header className="relative -mt-24 sm:-mt-28">
+          <span className="inline-block rounded-full shadow-md ring-4 ring-paper">
+            <Avatar handle={profile.handle} px={72} />
+          </span>
+          <h1 className="mt-3 font-serif text-[36px] font-semibold leading-tight tracking-[-0.015em] text-ink-950 sm:text-[44px]">
+            @{profile.handle}
+          </h1>
+          <p className="mt-2 max-w-xl text-[14px] leading-6 text-ink-700">
+            Turned {plural(profile.videos, "lecture")} into {plural(total, "exercise")}, across{" "}
+            {plural(catalogued || profile.courses.length, "course")} and {plural(profile.fields.length, "field")}.
+            {allExercises.length > 0 && <span className="text-ink-500"> {share}% of everything here.</span>}{" "}
+            <a
+              href={githubUrl(profile.handle)}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="whitespace-nowrap font-medium text-accent underline underline-offset-2"
             >
-              {s.hint}
-              <span className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-ink-950" />
-            </span>
-          </div>
-        ))}
-      </section>
+              GitHub ↗
+            </a>
+          </p>
+        </header>
+        {/* headline numbers: no tiles, just the numbers in the flow of the page */}
+        <section className="mt-10 flex flex-wrap gap-x-10 gap-y-5">
+          {stats.map((s) => (
+            <div key={s.label} className="group relative">
+              <p className="font-serif text-[34px] font-semibold leading-none tabular-nums text-ink-950">{s.value}</p>
+              <p className="label mt-1.5 flex items-center gap-1 text-ink-500">
+                {s.label}
+                <span
+                  aria-hidden
+                  className="grid h-3 w-3 place-items-center rounded-full border border-ink-900/25 font-sans text-[8px] font-bold leading-none text-ink-500/80"
+                >
+                  i
+                </span>
+              </p>
+              <span
+                role="tooltip"
+                className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden w-max max-w-[220px] -translate-x-1/2 rounded-lg bg-ink-950 px-3 py-2 text-left text-[11px] font-normal normal-case leading-snug tracking-normal text-zinc-100 shadow-lg group-hover:block"
+              >
+                {s.hint}
+                <span className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-ink-950" />
+              </span>
+            </div>
+          ))}
+        </section>
       {/* spread across fields */}
       <Section title="Across fields">
-        <div className="flex h-2.5 overflow-hidden rounded-full bg-ink-900/[0.06]">
-          {profile.fields.map((f, i) => (
-            <div
-              key={f.name}
-              title={`${f.name}: ${f.count}`}
-              style={{ width: `${(f.count / fieldTotal) * 100}%`, background: PALETTE[i % PALETTE.length] }}
-            />
-          ))}
+        {/* each field is a brushstroke; its length is its share of the work */}
+        <div className="max-w-xl space-y-3.5">
+          {profile.fields.map((f, i) => {
+            const pct = Math.round((f.count / fieldTotal) * 100);
+            return (
+              <div key={f.name}>
+                <div className="flex items-baseline justify-between gap-3 text-[13px]">
+                  <span className="min-w-0 truncate text-ink-800">{f.name}</span>
+                  <span className="shrink-0 font-mono text-[11px] tabular-nums text-ink-500">
+                    {f.count} · {pct}%
+                  </span>
+                </div>
+                <div
+                  className="mt-1.5 h-[7px] rounded-full"
+                  style={{
+                    width: `${pct}%`,
+                    minWidth: "3rem",
+                    background: `linear-gradient(90deg, ${PALETTE[i % PALETTE.length]}, ${PALETTE[(i + 2) % PALETTE.length]})`,
+                    opacity: 0.85,
+                  }}
+                />
+              </div>
+            );
+          })}
         </div>
-        <ul className="mt-3 space-y-1.5">
-          {profile.fields.map((f, i) => (
-            <li key={f.name} className="flex items-center gap-2 text-[13px] text-ink-800">
-              <span
-                className="h-2.5 w-2.5 shrink-0 rounded-sm"
-                style={{ background: PALETTE[i % PALETTE.length] }}
-                aria-hidden
-              />
-              <span className="min-w-0 flex-1 truncate">{f.name}</span>
-              <span className="shrink-0 font-mono text-[11px] tabular-nums text-ink-600">
-                {f.count} · {Math.round((f.count / fieldTotal) * 100)}%
-              </span>
-            </li>
-          ))}
-        </ul>
         {profile.levels.length > 0 && (
-          <p className="mt-3 font-mono text-[11px] text-ink-500">
+          <p className="mt-4 font-mono text-[11px] text-ink-500">
             Levels: {profile.levels.map((l) => `${l.name} ×${l.count}`).join(" · ")}
           </p>
         )}
@@ -202,17 +197,19 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
         title="Concepts taught"
         hint={`${profile.concepts.length} distinct${profile.untagged ? ` · ${profile.untagged} untagged` : ""}`}
       >
-        <div className="flex flex-wrap gap-1.5">
-          {profile.concepts.map((c) => (
-            <span
-              key={c.name}
-              className="rounded-full border border-ink-900/10 bg-white px-2.5 py-1 font-mono text-[11px] text-ink-800"
-            >
-              {c.name}
-              {c.count > 1 && <span className="ml-1 text-ink-500">×{c.count}</span>}
+        {/* concepts read as a line of thought, not a wall of capsules */}
+        <p className="max-w-2xl font-serif text-[17px] leading-8 text-ink-800">
+          {profile.concepts.map((c, i) => (
+            <span key={c.name}>
+              {/* the separator carries real spaces so the line can wrap */}
+              {i > 0 && <span className="text-ink-900/25">{" · "}</span>}
+              <span className="whitespace-nowrap">
+                {c.name.replace(/-/g, " ")}
+                {c.count > 1 && <sup className="ml-0.5 font-sans text-[10px] text-ink-500">{c.count}</sup>}
+              </span>
             </span>
           ))}
-        </div>
+        </p>
         {profile.untagged > 0 && (
           <p className="mt-3 text-[11px] text-ink-500">
             {profile.untagged} exercise{profile.untagged > 1 ? "s" : ""} not tagged with concepts yet.
@@ -221,7 +218,7 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
       </Section>
       {/* courses + the work itself */}
       <Section title="Courses contributed to">
-        <div className="space-y-4">
+        <div className="space-y-10">
           {profile.courses.map((cc) => (
             <CourseCard key={cc.courseId || "uncatalogued"} cc={cc} />
           ))}
@@ -233,6 +230,7 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
           grows.
         </p>
       </footer>
+      </div>
     </div>
   );
 }
@@ -260,8 +258,8 @@ function EmptyProfile({ handle }: { handle: string }) {
 export default function ProfilePage({ handle, backHref }: { handle: string; backHref: string }) {
   const profile = useMemo(() => getContributor(handle), [handle]);
   return (
-    <div className="flex h-full min-h-0 flex-col bg-ink-950">
-      <header className="flex h-11 shrink-0 items-center gap-2.5 px-3">
+    <div className="flex h-full min-h-0 flex-col">
+      <header className="flex h-11 shrink-0 items-center gap-2.5 bg-ink-950 px-3">
         <a href={backHref} className="flex shrink-0 items-center gap-2 pr-1" title="Back to exercises">
           <Brand />
         </a>
@@ -273,10 +271,9 @@ export default function ProfilePage({ handle, backHref }: { handle: string; back
           ← Back to exercises
         </a>
       </header>
-      <div className="min-h-0 flex-1 p-1.5 pt-0">
-        <div className="h-full overflow-y-auto rounded-lg bg-paper ring-1 ring-white/[0.06] scroll-slim">
-          {profile ? <ProfileBody profile={profile} /> : <EmptyProfile handle={handle} />}
-        </div>
+      {/* The profile floats directly on the site's canvas — no framed surface. */}
+      <div className="min-h-0 flex-1 overflow-y-auto scroll-slim">
+        {profile ? <ProfileBody profile={profile} /> : <EmptyProfile handle={handle} />}
       </div>
     </div>
   );

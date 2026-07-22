@@ -1,11 +1,11 @@
-import { useMemo } from "react";
-import type { ReactNode } from "react";
+import { useEffect, useRef } from "react";
 
 /**
- * A generated night sky, seeded from the handle, so every contributor gets a
- * different painting. The strokes and stars are locally just marks; together
- * they compose one scene, the same way scattered lectures compose one journey.
- * Deterministic per handle (no Math.random), so a person's canvas is stable.
+ * The contributor's night sky, painted in impasto: thousands of short, thick,
+ * saturated dabs following flow currents, so color arrives as masses — locally
+ * each dab is a meaningless mark, together they compose one scene. Seeded from
+ * the handle, so every contributor owns a different painting, stable over time.
+ * Painted once to an in-flow <canvas>; the bottom dissolves into the paper.
  */
 function makeRng(seed: string) {
   let h = 1779033703 ^ seed.length;
@@ -20,111 +20,162 @@ function makeRng(seed: string) {
   };
 }
 
-const W = 1200;
-const H = 460;
-const BLUES = ["#16264f", "#1d3568", "#264a8f", "#2f5aa0", "#3f74c0", "#5a93d6"];
-const GREENS = ["#234b3b", "#2f6b52", "#3f8060"];
-const GOLDS = ["#e7c14a", "#f2d879", "#fbeaa6"];
+// Starry-night pigments, dark base to pale highlight, plus golds for the stars.
+const BASE = ["#101f45", "#16295b", "#1d3568", "#24417c", "#2c4e91"];
+const CURRENT = ["#3f74c0", "#5a8fd0", "#7fabdf", "#a8c6e8", "#2f6b52", "#4b8a6e"];
+const GOLD = ["#e0b64a", "#eccb6f", "#f6e29b"];
 
-export default function StarryHero({ handle, children }: { handle: string; children: ReactNode }) {
-  const { strokes, stars } = useMemo(() => {
-    const r = makeRng(handle || "understudy");
-    // A few swirl centres; strokes bend around them like Van Gogh's eddies.
-    const vortices = Array.from({ length: 3 }, () => ({
-      x: r() * W,
-      y: r() * H * 0.85,
-      s: (r() < 0.5 ? -1 : 1) * (0.6 + r()),
-    }));
-    const field = (x: number, y: number) => {
-      let ang = 0.55;
-      for (const v of vortices) {
-        const dx = x - v.x;
-        const dy = y - v.y;
-        const d = Math.hypot(dx, dy) + 45;
-        ang += (Math.atan2(dy, dx) + Math.PI / 2) * ((v.s * 180) / d);
+function paint(canvas: HTMLCanvasElement, seed: string) {
+  const cssW = canvas.clientWidth || 1200;
+  const cssH = canvas.clientHeight || 340;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  canvas.width = Math.round(cssW * dpr);
+  canvas.height = Math.round(cssH * dpr);
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+  ctx.scale(dpr, dpr);
+  const W = cssW;
+  const H = cssH;
+  const r = makeRng(seed);
+
+  // night base
+  const sky = ctx.createLinearGradient(0, 0, 0, H);
+  sky.addColorStop(0, "#0c1838");
+  sky.addColorStop(0.7, "#16295b");
+  sky.addColorStop(1, "#24406f");
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, W, H);
+
+  // flow: a couple of eddies over a horizontal drift
+  const vortices = Array.from({ length: 2 + Math.floor(r() * 2) }, () => ({
+    x: r() * W,
+    y: r() * H * 0.75,
+    s: (r() < 0.5 ? -1 : 1) * (0.7 + r() * 0.6),
+  }));
+  const field = (x: number, y: number) => {
+    let a = 0.1;
+    for (const v of vortices) {
+      const dx = x - v.x;
+      const dy = y - v.y;
+      const d = Math.hypot(dx, dy) + 90;
+      a += (Math.atan2(dy, dx) + Math.PI / 2) * ((v.s * 150) / d);
+    }
+    return a;
+  };
+
+  ctx.lineCap = "round";
+  const dab = (x: number, y: number, a: number, len: number, w: number, color: string, alpha: number) => {
+    ctx.strokeStyle = color;
+    ctx.globalAlpha = alpha;
+    ctx.lineWidth = w;
+    ctx.beginPath();
+    ctx.moveTo(x - (Math.cos(a) * len) / 2, y - (Math.sin(a) * len) / 2);
+    ctx.lineTo(x + (Math.cos(a) * len) / 2, y + (Math.sin(a) * len) / 2);
+    ctx.stroke();
+  };
+
+  // layer 1: base masses — the sky is made of paint, not gradient
+  for (let i = 0; i < 1600; i++) {
+    const x = r() * W;
+    const y = r() * H;
+    const a = field(x, y) + (r() - 0.5) * 0.3;
+    const shade = Math.min(BASE.length - 1, Math.floor((y / H) * BASE.length + (r() - 0.5) * 1.6));
+    dab(x, y, a, 16 + r() * 20, 7 + r() * 7, BASE[Math.max(0, shade)], 0.3 + r() * 0.3);
+  }
+
+  // layer 2: currents — walk streamlines, dropping bright dabs, so the swirls
+  // read as continuous rivers of light
+  const streams = 26;
+  for (let s = 0; s < streams; s++) {
+    let x = r() * W;
+    let y = r() * H * 0.85;
+    const color = CURRENT[Math.floor(r() * CURRENT.length)];
+    const steps = 24 + Math.floor(r() * 30);
+    for (let k = 0; k < steps; k++) {
+      const a = field(x, y);
+      dab(x, y, a, 18 + r() * 14, 6 + r() * 5, color, 0.35 + r() * 0.35);
+      x += Math.cos(a) * 13;
+      y += Math.sin(a) * 13;
+      if (x < -20 || x > W + 20 || y < -20 || y > H + 20) break;
+    }
+  }
+
+  // layer 3: stars with Van Gogh halos — a glow, then rings of gold dabs
+  const starCount = 7 + Math.floor(r() * 5);
+  for (let i = 0; i < starCount; i++) {
+    const sx = r() * W;
+    const sy = r() * H * 0.6;
+    const big = r() < 0.3;
+    const R = big ? 26 + r() * 18 : 10 + r() * 10;
+    const glow = ctx.createRadialGradient(sx, sy, 0, sx, sy, R * 2.4);
+    glow.addColorStop(0, "rgba(246,226,155,0.85)");
+    glow.addColorStop(0.35, "rgba(224,182,74,0.32)");
+    glow.addColorStop(1, "rgba(224,182,74,0)");
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(sx, sy, R * 2.4, 0, Math.PI * 2);
+    ctx.fill();
+    // halo rings of tangential dabs
+    const rings = big ? 3 : 2;
+    for (let q = 0; q < rings; q++) {
+      const rr = R * (0.55 + q * 0.45);
+      const n = 7 + q * 4;
+      for (let j = 0; j < n; j++) {
+        const t = (j / n) * Math.PI * 2 + r() * 0.5;
+        dab(
+          sx + Math.cos(t) * rr,
+          sy + Math.sin(t) * rr,
+          t + Math.PI / 2,
+          8 + r() * 9,
+          3.5 + r() * 3,
+          GOLD[Math.floor(r() * GOLD.length)],
+          0.5 + r() * 0.35,
+        );
       }
-      return ang;
+    }
+    ctx.globalAlpha = 1;
+    ctx.fillStyle = "#fdf6da";
+    ctx.beginPath();
+    ctx.arc(sx, sy, big ? 3.4 : 2, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // the night dissolves into the site's paper
+  ctx.globalAlpha = 1;
+  const fade = ctx.createLinearGradient(0, H * 0.45, 0, H);
+  fade.addColorStop(0, "rgba(251,250,241,0)");
+  fade.addColorStop(0.75, "rgba(251,250,241,0.55)");
+  fade.addColorStop(1, "rgba(251,250,241,1)");
+  ctx.fillStyle = fade;
+  ctx.fillRect(0, 0, W, H);
+}
+
+export default function StarryHero({ handle }: { handle: string }) {
+  const ref = useRef<HTMLCanvasElement>(null);
+
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    paint(canvas, handle || "understudy");
+    let t: ReturnType<typeof setTimeout>;
+    const onResize = () => {
+      clearTimeout(t);
+      t = setTimeout(() => paint(canvas, handle || "understudy"), 150);
     };
-    const strokes = [] as { d: string; color: string; w: number; o: number }[];
-    for (let i = 0; i < 300; i++) {
-      let x = r() * W;
-      let y = r() * H;
-      const pts: [number, number][] = [[x, y]];
-      const steps = 5 + Math.floor(r() * 8);
-      for (let s = 0; s < steps; s++) {
-        const a = field(x, y) + (r() - 0.5) * 0.5;
-        x += Math.cos(a) * 16;
-        y += Math.sin(a) * 16;
-        pts.push([x, y]);
-      }
-      const pal = r() < 0.14 ? GOLDS : r() < 0.26 ? GREENS : BLUES;
-      strokes.push({
-        d: "M" + pts.map((p) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(" L"),
-        color: pal[Math.floor(r() * pal.length)],
-        w: 2 + r() * 5.5,
-        o: 0.25 + r() * 0.45,
-      });
-    }
-    const stars = [] as { x: number; y: number; glow: number; core: number }[];
-    for (let i = 0; i < 16; i++) {
-      const big = r() < 0.25;
-      stars.push({
-        x: r() * W,
-        y: r() * H * 0.72,
-        glow: big ? 26 + r() * 22 : 8 + r() * 10,
-        core: big ? 3 + r() * 2 : 1 + r() * 1.5,
-      });
-    }
-    return { strokes, stars };
+    window.addEventListener("resize", onResize);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("resize", onResize);
+    };
   }, [handle]);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl shadow-sm ring-1 ring-ink-950/20">
-      <svg
-        viewBox={`0 0 ${W} ${H}`}
-        preserveAspectRatio="xMidYMid slice"
-        className="h-[320px] w-full sm:h-[400px]"
-        role="img"
-        aria-label="This contributor's work rendered as a night sky"
-      >
-        <defs>
-          <linearGradient id="uy-night" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#0c1633" />
-            <stop offset="0.55" stopColor="#14264f" />
-            <stop offset="1" stopColor="#1c3a5c" />
-          </linearGradient>
-          <radialGradient id="uy-star">
-            <stop offset="0" stopColor="#fbeaa6" stopOpacity="0.9" />
-            <stop offset="0.4" stopColor="#e7c14a" stopOpacity="0.35" />
-            <stop offset="1" stopColor="#e7c14a" stopOpacity="0" />
-          </radialGradient>
-          <linearGradient id="uy-scrim" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0.4" stopColor="#0a1228" stopOpacity="0" />
-            <stop offset="1" stopColor="#0a1228" stopOpacity="0.88" />
-          </linearGradient>
-        </defs>
-        <rect width={W} height={H} fill="url(#uy-night)" />
-        {strokes.map((s, i) => (
-          <path
-            key={i}
-            d={s.d}
-            stroke={s.color}
-            strokeWidth={s.w}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            fill="none"
-            opacity={s.o}
-          />
-        ))}
-        {stars.map((st, i) => (
-          <g key={i}>
-            <circle cx={st.x} cy={st.y} r={st.glow} fill="url(#uy-star)" />
-            <circle cx={st.x} cy={st.y} r={st.core} fill="#fff7d6" />
-          </g>
-        ))}
-        <rect width={W} height={H} fill="url(#uy-scrim)" />
-      </svg>
-      <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8">{children}</div>
-    </div>
+    <canvas
+      ref={ref}
+      role="img"
+      aria-label="This contributor's work rendered as a painted night sky"
+      className="block h-[280px] w-full sm:h-[340px]"
+    />
   );
 }

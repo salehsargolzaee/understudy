@@ -48,7 +48,7 @@ export default function App() {
     return <ProfilePage handle={user} backHref={`${EX_HASH}${encodeURIComponent(backId)}`} />;
   }
   return (
-    <div className="flex h-full min-h-0 flex-col bg-ink-950">
+    <div className="flex h-full min-h-0 flex-col">
       <ExercisePicker exercises={exercises} currentId={exercise?.meta.id ?? null} passed={passed} onSelect={setId} />
       {exercise ? (
         <ExerciseWorkspace key={exercise.meta.id} exercise={exercise} onPass={() => setPassed(loadPassed())} />
