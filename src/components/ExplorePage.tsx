@@ -480,26 +480,30 @@ export default function ExplorePage({ view, workspaceHref }: { view: ExploreView
         )}
       </header>
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto scroll-slim">
-        {showing.type === "home" ? (
+        {view.type === "home" ? (
+          /* The home hero stays mounted while typing — `showing` only swaps the
+             content BELOW it — so the search input never loses focus on the
+             first keystroke. */
           <>
             {/* the catalog's own night sky; the search floats where it meets the paper */}
             <div className="relative">
               <StarryHero handle="understudy · explore" label="The understudy catalog, painted as a night sky" />
-              <div className="absolute inset-0 flex flex-col items-center justify-center px-5 pb-10 text-center">
-                <h1 className="font-serif text-[30px] font-semibold leading-tight tracking-[-0.015em] text-white drop-shadow-md sm:text-[40px]">
+              {/* the words live on the solid night, above the fade, so they never dissolve */}
+              <div className="absolute inset-0 flex flex-col items-center justify-start px-5 pt-8 text-center sm:pt-12">
+                <h1 className="font-serif text-[30px] font-semibold leading-tight tracking-[-0.015em] text-white [text-shadow:0_2px_18px_rgba(13,19,48,0.9)] sm:text-[40px]">
                   Practice what you watch.
                 </h1>
-                <p className="mt-2 font-mono text-[11px] tabular-nums text-zinc-300 drop-shadow sm:text-[12px]">
+                <p className="mt-2 font-mono text-[11px] tabular-nums text-zinc-100 [text-shadow:0_1px_10px_rgba(13,19,48,0.9)] sm:text-[12px]">
                   {catalogStats.exercises} exercises · {catalogStats.courses} courses · {catalogStats.contributors}{" "}
                   contributors · {catalogStats.concepts} concepts
                 </p>
-                <div className="mt-5 w-full max-w-xl">
+                <div className="mt-6 w-full max-w-xl sm:mt-8">
                   <SearchBox value={q} onChange={onQuery} large />
                 </div>
               </div>
             </div>
             <div className="mx-auto max-w-5xl px-5 pb-20 sm:px-8">
-              <HomeSections />
+              {showing.type === "search" ? <SearchResults q={showing.q} /> : <HomeSections />}
             </div>
           </>
         ) : (
@@ -507,6 +511,8 @@ export default function ExplorePage({ view, workspaceHref }: { view: ExploreView
             <div className="max-w-xl">
               <SearchBox value={q} onChange={onQuery} />
             </div>
+            {/* clearing a navigated search lands back on the browsable catalog */}
+            {showing.type === "home" && <HomeSections />}
             {showing.type === "search" && <SearchResults q={showing.q} />}
             {showing.type === "course" && <CourseView id={showing.id} />}
             {showing.type === "field" && <FacetView kind="field" name={showing.name} />}
