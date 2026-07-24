@@ -1,0 +1,11 @@
+# Deliberately has no `lectures:` list: this course's lecture names arrive with
+# its exercises (meta.yml `video_title`). Both paths are supported.
+id: mit-6006
+name: "Introduction to Algorithms (MIT 6.006)"
+institution: "MIT OpenCourseWare"
+creator: "Erik Demaine & Jason Ku"
+platform: youtube
+playlist_url: "https://www.youtube.com/playlist?list=PLUl4u3cNGP63EdVPNLG3ToM6LaEUuStEY"
+playlist_id: "PLUl4u3cNGP63EdVPNLG3ToM6LaEUuStEY"
+field: "CS / Algorithms"
+level: undergraduate

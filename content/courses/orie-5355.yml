@@ -4,5 +4,9 @@ institution: "Cornell Tech"
 creator: "Nikhil Garg"
 platform: youtube
 playlist_url: "https://www.youtube.com/playlist?list=PLPjsPBAj-5PWX8dWDcqYfMvEuh7DWuBEJ"
+playlist_id: "PLPjsPBAj-5PWX8dWDcqYfMvEuh7DWuBEJ"
 field: "CS / Applied ML"
 level: graduate
+lectures:
+  - id: caAiEHh3VKQ
+    title: "Lecture 1 — Course introduction, logistics & a taste of mechanism design"

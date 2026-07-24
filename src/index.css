@@ -79,3 +79,11 @@ body[data-dragging] { user-select: none; }
 .scroll-slim { scrollbar-width: thin; scrollbar-color: rgba(16,22,46,0.18) transparent; }
 .scroll-slim::-webkit-scrollbar { width: 9px; height: 9px; }
 .scroll-slim::-webkit-scrollbar-thumb { background: rgba(16,22,46,0.16); border-radius: 9px; border: 2px solid transparent; background-clip: content-box; }
+
+/* two-line clamp for lecture titles in cards and lists */
+.clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

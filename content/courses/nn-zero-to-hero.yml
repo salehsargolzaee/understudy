@@ -1,0 +1,18 @@
+id: nn-zero-to-hero
+name: "Neural Networks: Zero to Hero"
+institution: "Eureka Labs"
+creator: "Andrej Karpathy"
+platform: youtube
+playlist_url: "https://www.youtube.com/playlist?list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ"
+playlist_id: "PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ"
+field: "Deep Learning"
+level: undergraduate
+# Ordered table of contents. A lecture may be listed before anybody has written
+# practice for it — that is the normal state of a course being filled in.
+lectures:
+  - id: VMj-3S1tku0
+    title: "The spelled-out intro to neural networks and backpropagation: building micrograd"
+  - id: PaCmpygFfXo
+    title: "The spelled-out intro to language modeling: building makemore"
+  - id: kCc8FmEb1nY
+    title: "Let's build GPT: from scratch, in code, spelled out"

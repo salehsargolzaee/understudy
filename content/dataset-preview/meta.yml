@@ -1,9 +1,11 @@
 id: dataset-preview
 author: salehsargolzaee
 video_id: caAiEHh3VKQ
+video_title: "Lecture 1 — Course introduction, logistics & a taste of mechanism design"
 start: 1215
 concept: "Placeholder — data + math rendering"
 tags: [placeholder, pandas, rendering]
+concepts: [dataframes]
 playlist: "ORIE 5355 — People, Data, and Systems"
 runtime: pyodide
 packages: [pandas]

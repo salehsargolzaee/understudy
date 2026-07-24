@@ -5,12 +5,18 @@ export type ExploreView =
   | { type: "course"; id: string }
   | { type: "field"; name: string }
   | { type: "level"; name: string };
+
 export const exerciseHash = (id: string) => `#/e/${encodeURIComponent(id)}`;
 export const exploreHome = "#/x";
 export const searchHash = (q: string) => `#/x/q/${encodeURIComponent(q)}`;
 export const courseHash = (id: string) => `#/x/c/${encodeURIComponent(id)}`;
 export const fieldHash = (name: string) => `#/x/f/${encodeURIComponent(name)}`;
 export const levelHash = (name: string) => `#/x/l/${encodeURIComponent(name)}`;
+
+/** A lecture, optionally opened at a timestamp: #/v/<id> or #/v/<id>/t/<sec>. */
+export const videoHash = (id: string, start?: number | null) =>
+  start && start > 0 ? `#/v/${encodeURIComponent(id)}/t/${Math.floor(start)}` : `#/v/${encodeURIComponent(id)}`;
+
 export const viewHash = (v: ExploreView): string => {
   switch (v.type) {
     case "home":
@@ -25,6 +31,7 @@ export const viewHash = (v: ExploreView): string => {
       return levelHash(v.name);
   }
 };
+
 export const safeDecode = (s: string) => {
   try {
     return decodeURIComponent(s);
@@ -32,6 +39,7 @@ export const safeDecode = (s: string) => {
     return s;
   }
 };
+
 /** `rest` is everything after "#/x". Unknown shapes fall back to home. */
 export function parseExplore(rest: string): ExploreView {
   const m = /^\/(q|c|f|l)\/(.+)$/.exec(rest);
@@ -41,4 +49,13 @@ export function parseExplore(rest: string): ExploreView {
   if (m[1] === "c") return { type: "course", id: v };
   if (m[1] === "f") return { type: "field", name: v };
   return { type: "level", name: v };
+}
+
+/** `rest` is everything after "#/v/". */
+export function parseVideoRoute(rest: string): { id: string; start: number | null } | null {
+  const m = /^([^/?#]+)(?:\/t\/(\d+))?/.exec(rest);
+  if (!m) return null;
+  const id = safeDecode(m[1]);
+  if (!id) return null;
+  return { id, start: m[2] ? Number(m[2]) : null };
 }

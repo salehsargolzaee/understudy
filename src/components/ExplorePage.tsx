@@ -14,6 +14,9 @@ import {
   tallyConcepts,
 } from "../lib/catalog";
 import type { CourseSummary, FacetSummary } from "../lib/catalog";
+import { getVideo, lecturesForCourse, videoLabel, videosWithExercises, findCourseByPlaylistId } from "../lib/videos";
+import type { LectureVideo } from "../lib/videos";
+import { parseYouTubeRef, formatTimestamp, youtubePlaylistUrl } from "../lib/youtube";
 import { profileHash } from "../lib/github";
 import { nightRailBg } from "../lib/nightRail";
 import {
@@ -23,6 +26,7 @@ import {
   fieldHash,
   levelHash,
   searchHash,
+  videoHash,
   viewHash,
 } from "../lib/routes";
 import type { ExploreView } from "../lib/routes";
@@ -31,17 +35,26 @@ import Avatar from "./Avatar";
 import Brand from "./Brand";
 import ConceptChip from "./ConceptChip";
 import StarryHero from "./StarryHero";
+import VideoThumb from "./VideoThumb";
+
 /**
  * The discovery surface and the home screen: one painted night hero over a
  * moonstone catalog. Everything here is reachable from everything else —
- * course → contributor → concept → search → exercise — and every view keeps
- * the search box within reach.
+ * lecture → course → contributor → concept → search → exercise — and every view
+ * keeps the search box within reach.
+ *
+ * The search box is also the paste box: a YouTube link typed or pasted into it
+ * resolves immediately to the lecture (or the course, for a playlist link).
  */
+
 const PALETTE = ["#26418f", "#2f6b52", "#3f74c0", "#c39422", "#6b5b95"];
 const PILL =
   "inline-flex items-center gap-1.5 rounded-full border border-ink-900/15 bg-white px-3 py-1 text-[12px] font-medium text-ink-900 transition-colors hover:border-accent/60 hover:bg-accent-soft";
+
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+
 /* ── small shared pieces ─────────────────────────────────────────────────── */
+
 function Section({ title, hint, children }: { title: string; hint?: string; children: React.ReactNode }) {
   return (
     <section className="mt-12">
@@ -56,6 +69,7 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
     </section>
   );
 }
+
 function SearchBox({ value, onChange, large = false }: { value: string; onChange: (v: string) => void; large?: boolean }) {
   return (
     <label
@@ -70,8 +84,17 @@ function SearchBox({ value, onChange, large = false }: { value: string; onChange
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder="Search courses, concepts, fields, people…"
-        aria-label="Search the catalog"
+        onPaste={(e) => {
+          // a paste is the one gesture that must resolve instantly, even if the
+          // browser would otherwise batch it oddly
+          const text = e.clipboardData.getData("text");
+          if (parseYouTubeRef(text)) {
+            e.preventDefault();
+            onChange(text);
+          }
+        }}
+        placeholder="Search lectures, courses, concepts, people… or paste a YouTube link"
+        aria-label="Search the catalog or paste a YouTube link"
         className={`w-full bg-transparent text-ink-950 placeholder:text-ink-500 focus:outline-none ${
           large ? "text-[16px]" : "text-[13.5px]"
         }`}
@@ -84,6 +107,7 @@ function SearchBox({ value, onChange, large = false }: { value: string; onChange
     </label>
   );
 }
+
 function PersonCard({ handle, count }: { handle: string; count: number }) {
   return (
     <a
@@ -101,6 +125,78 @@ function PersonCard({ handle, count }: { handle: string; count: number }) {
     </a>
   );
 }
+
+/** A lecture, as a card. The front door: tapping it goes to watching. */
+function LectureCard({ v }: { v: LectureVideo }) {
+  const sub = [
+    v.course?.name,
+    v.index ? `Lecture ${v.index}` : "",
+    v.exercises.length ? plural(v.exercises.length, "exercise") : "no practice yet",
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  return (
+    <a
+      href={videoHash(v.id)}
+      className="group flex gap-3 rounded-2xl bg-white p-3 ring-1 ring-ink-900/[0.08] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:ring-accent/50"
+    >
+      <span className="relative shrink-0 overflow-hidden rounded-xl">
+        <VideoThumb id={v.id} className="h-[58px] w-[104px]" />
+        <span
+          aria-hidden
+          className="absolute inset-0 grid place-items-center text-[13px] text-white opacity-0 transition-opacity group-hover:opacity-100"
+          style={{ background: "rgba(13,19,48,0.35)" }}
+        >
+          ▶
+        </span>
+      </span>
+      <span className="min-w-0 flex-1">
+        <span className="clamp-2 block font-serif text-[15px] font-semibold leading-snug text-ink-950">
+          {videoLabel(v)}
+        </span>
+        <span className="mt-1 block truncate font-mono text-[10px] text-ink-600">{sub}</span>
+      </span>
+      <span className="shrink-0 self-center text-ink-500 transition-transform group-hover:translate-x-0.5" aria-hidden>
+        →
+      </span>
+    </a>
+  );
+}
+
+/** A lecture, as a row in a course's table of contents. */
+function LectureRow({ v, n }: { v: LectureVideo; n: number }) {
+  return (
+    <li className="group">
+      <a
+        href={videoHash(v.id)}
+        className="flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-white"
+      >
+        <span className="w-5 shrink-0 font-mono text-[11px] tabular-nums text-ink-500">{v.index ?? n}</span>
+        <VideoThumb id={v.id} className="h-[36px] w-[64px] shrink-0 rounded-md" />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[13.5px] font-medium text-ink-950">{videoLabel(v)}</span>
+          <span className="block truncate font-mono text-[10px] text-ink-500">
+            {v.exercises.length
+              ? `${plural(v.exercises.length, "exercise")} · ${v.moments
+                  .slice(0, 3)
+                  .map((m) => formatTimestamp(m.start))
+                  .join(", ")}${v.moments.length > 3 ? "…" : ""}`
+              : "no practice yet — be the first"}
+          </span>
+        </span>
+        <span className="hidden shrink-0 items-center gap-1.5 lg:flex">
+          {[...new Set(v.exercises.flatMap((e) => e.meta.concepts))].slice(0, 2).map((c) => (
+            <ConceptChip key={c} name={c} small />
+          ))}
+        </span>
+        <span className="shrink-0 text-ink-500 transition-transform group-hover:translate-x-0.5" aria-hidden>
+          →
+        </span>
+      </a>
+    </li>
+  );
+}
+
 function ExerciseLine({ e, showCourse = true }: { e: Exercise; showCourse?: boolean }) {
   const course = getCourse(e.meta.course);
   const level = levelOf(e);
@@ -109,8 +205,8 @@ function ExerciseLine({ e, showCourse = true }: { e: Exercise; showCourse?: bool
     .join(" · ");
   return (
     <li className="group relative flex items-center gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-white">
-      {/* full-row underlay: the whole row opens the exercise; the chips and the
-          avatar sit above it and navigate independently */}
+      {/* full-row underlay: the whole row opens the exercise; the chips, the
+          lecture link and the avatar sit above it and navigate independently */}
       <a
         href={exerciseHash(e.meta.id)}
         className="absolute inset-0 z-0 rounded-xl"
@@ -126,6 +222,16 @@ function ExerciseLine({ e, showCourse = true }: { e: Exercise; showCourse?: bool
         <span className="block truncate text-[13.5px] font-medium text-ink-950">{e.meta.concept || e.meta.id}</span>
         <span className="block truncate font-mono text-[10px] text-ink-500">{sub}</span>
       </span>
+      {e.meta.video_id && (
+        <a
+          href={videoHash(e.meta.video_id, e.meta.start)}
+          title={`Watch: ${e.meta.video_title || e.meta.video_id}`}
+          className="relative z-10 hidden shrink-0 items-center gap-1 rounded-full border border-ink-900/15 bg-white px-2 py-0.5 font-mono text-[10px] tabular-nums text-verd transition-colors hover:border-accent/60 hover:bg-accent-soft hover:text-ink-950 sm:flex"
+        >
+          <span aria-hidden className="text-[8px]">▶</span>
+          {formatTimestamp(e.meta.start)}
+        </a>
+      )}
       <span className="relative z-10 hidden shrink-0 items-center gap-1.5 lg:flex">
         {e.meta.concepts.slice(0, 3).map((c) => (
           <ConceptChip key={c} name={c} small />
@@ -143,6 +249,7 @@ function ExerciseLine({ e, showCourse = true }: { e: Exercise; showCourse?: bool
     </li>
   );
 }
+
 function CourseCard({ s, stroke = 0 }: { s: CourseSummary; stroke?: number }) {
   const c = s.course;
   return (
@@ -168,8 +275,7 @@ function CourseCard({ s, stroke = 0 }: { s: CourseSummary; stroke?: number }) {
           ))}
         </span>
         <span className="font-mono text-[10.5px] tabular-nums text-ink-600">
-          {plural(s.exercises.length, "exercise")}
-          {s.concepts.length > 0 && ` · ${plural(s.concepts.length, "concept")}`}
+          {plural(s.lectures, "lecture")} · {plural(s.exercises.length, "exercise")}
         </span>
         <span className="ml-auto text-ink-500 transition-transform group-hover:translate-x-0.5" aria-hidden>
           →
@@ -178,6 +284,7 @@ function CourseCard({ s, stroke = 0 }: { s: CourseSummary; stroke?: number }) {
     </a>
   );
 }
+
 function FieldCard({ f, i }: { f: FacetSummary; i: number }) {
   return (
     <a
@@ -197,6 +304,7 @@ function FieldCard({ f, i }: { f: FacetSummary; i: number }) {
     </a>
   );
 }
+
 function Missing({ label }: { label: string }) {
   return (
     <div className="mt-20 text-center">
@@ -210,10 +318,95 @@ function Missing({ label }: { label: string }) {
     </div>
   );
 }
+
+/* ── pasted links ────────────────────────────────────────────────────────── */
+
+/**
+ * What a pasted link looks like when it lands here as text rather than as a
+ * navigation (a shared #/x/q/<url>, or a playlist we do not have). Typing or
+ * pasting in the box navigates straight through; this is the safety net.
+ */
+function PastedLink({ q }: { q: string }) {
+  const ref = parseYouTubeRef(q);
+  if (!ref) return null;
+
+  if (ref.kind === "video") {
+    const v = getVideo(ref.videoId);
+    return (
+      <section className="mt-8 overflow-hidden rounded-2xl bg-white p-5 ring-1 ring-accent/45 shadow-sm">
+        <p className="label text-ink-600">YouTube link recognised</p>
+        <div className="mt-3 flex flex-wrap items-center gap-4">
+          <a href={videoHash(ref.videoId, ref.start)} className="shrink-0 overflow-hidden rounded-xl">
+            <VideoThumb id={ref.videoId} className="h-[72px] w-[128px]" />
+          </a>
+          <div className="min-w-0 flex-1">
+            <h2 className="font-serif text-[19px] font-semibold leading-snug text-ink-950">{videoLabel(v)}</h2>
+            <p className="mt-1 font-mono text-[10.5px] text-ink-600">
+              {[
+                v.course?.name,
+                v.exercises.length ? plural(v.exercises.length, "exercise") : "no practice yet",
+                ref.start ? `from ${formatTimestamp(ref.start)}` : "",
+              ]
+                .filter(Boolean)
+                .join(" · ")}
+            </p>
+          </div>
+          <a
+            href={videoHash(ref.videoId, ref.start)}
+            className="shrink-0 rounded-full bg-accent px-4 py-2 text-[12.5px] font-bold text-ink-950 shadow-sm transition hover:bg-accent-bright active:scale-[.97]"
+          >
+            Watch here →
+          </a>
+        </div>
+      </section>
+    );
+  }
+
+  const course = findCourseByPlaylistId(ref.playlistId);
+  const summary = course ? getCourseSummary(course.id) : undefined;
+  return (
+    <section className="mt-8 rounded-2xl bg-white p-5 ring-1 ring-accent/45 shadow-sm">
+      <p className="label text-ink-600">Playlist link recognised</p>
+      {summary ? (
+        <div className="mt-4">
+          <CourseCard s={summary} />
+        </div>
+      ) : (
+        <>
+          <h2 className="mt-2 font-serif text-[20px] font-semibold text-ink-950">
+            That playlist is not in the catalog yet
+          </h2>
+          <p className="mt-2 max-w-prose text-[14px] leading-6 text-ink-700">
+            Paste a link to one of its <em>lectures</em> instead and you can start watching here immediately — the
+            lecture page is where the first exercise for it gets written.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <a href={youtubePlaylistUrl(ref.playlistId)} target="_blank" rel="noreferrer noopener" className={PILL}>
+              Open the playlist on YouTube ↗
+            </a>
+            <a href={exploreHome} className={PILL}>
+              Browse the courses we have
+            </a>
+          </div>
+          <p className="mt-3 font-mono text-[10px] text-ink-500">list: {ref.playlistId}</p>
+        </>
+      )}
+    </section>
+  );
+}
+
 /* ── views ───────────────────────────────────────────────────────────────── */
+
 function HomeSections() {
   return (
     <>
+      <Section title="Lectures" hint={`${videosWithExercises.length} with practice`}>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {videosWithExercises.map((v) => (
+            <LectureCard key={v.id} v={v} />
+          ))}
+        </div>
+      </Section>
       <Section title="Courses" hint={`${courseSummaries.length} in the catalog`}>
         <div className="grid gap-4 sm:grid-cols-2">
           {courseSummaries.map((s, i) => (
@@ -255,8 +448,14 @@ function HomeSections() {
     </>
   );
 }
+
 function SearchResults({ q }: { q: string }) {
+  const link = useMemo(() => parseYouTubeRef(q), [q]);
   const res = useMemo(() => searchCatalog(q), [q]);
+
+  // a pasted link is an address, not a query: resolve it, don't rank it
+  if (link) return <PastedLink q={q} />;
+
   if (!res.total) {
     return (
       <div className="mt-16 text-center">
@@ -264,7 +463,9 @@ function SearchResults({ q }: { q: string }) {
           ✦
         </span>
         <p className="mt-3 font-serif text-xl font-semibold text-ink-950">Nothing matches “{q.trim()}”</p>
-        <p className="mt-1 text-[13px] text-ink-700">Try a concept, a course name, a field, or a contributor's handle.</p>
+        <p className="mt-1 text-[13px] text-ink-700">
+          Try a lecture title, a concept, a course name, a field, a contributor's handle — or paste a YouTube link.
+        </p>
         <div className="mt-6 flex flex-wrap justify-center gap-1.5">
           {conceptCounts.slice(0, 8).map((c) => (
             <ConceptChip key={c.name} name={c.name} />
@@ -273,14 +474,24 @@ function SearchResults({ q }: { q: string }) {
       </div>
     );
   }
+
   return (
     <>
       <p className="mt-6 text-[13px] text-ink-700">
         <span className="font-semibold tabular-nums text-ink-950">{res.total}</span> result{res.total === 1 ? "" : "s"} for{" "}
         <span className="font-serif italic">“{q.trim()}”</span>
       </p>
+      {res.videos.length > 0 && (
+        <Section title="Lectures" hint={`${res.videos.length}`}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {res.videos.map((v) => (
+              <LectureCard key={v.id} v={v} />
+            ))}
+          </div>
+        </Section>
+      )}
       {res.courses.length > 0 && (
-        <Section title="Courses" hint={`${res.courses.length}`}>
+        <Section title="Courses & playlists" hint={`${res.courses.length}`}>
           <div className="grid gap-4 sm:grid-cols-2">
             {res.courses.map((c, i) => {
               const s = getCourseSummary(c.id);
@@ -319,14 +530,17 @@ function SearchResults({ q }: { q: string }) {
     </>
   );
 }
+
 function CourseView({ id }: { id: string }) {
   const s = getCourseSummary(id);
   const fallback = useMemo(() => exercises.filter((e) => e.meta.course === id), [id]);
   const exs = s?.exercises ?? fallback;
+  const lectures = useMemo(() => lecturesForCourse(id), [id]);
   if (!s && !exs.length) return <Missing label={`No course “${id}” in the catalog.`} />;
   const c = s?.course ?? null;
   const people = s?.contributors ?? tallyAuthors(exs);
   const concepts = s?.concepts ?? tallyConcepts(exs);
+
   return (
     <article className="mt-8">
       <p className="label text-ink-600">Course</p>
@@ -357,8 +571,21 @@ function CourseView({ id }: { id: string }) {
             {c.platform === "youtube" ? "YouTube playlist" : "Playlist"} ↗
           </a>
         )}
-        <span className="font-mono text-[11px] tabular-nums text-ink-600">{plural(exs.length, "exercise")}</span>
+        <span className="font-mono text-[11px] tabular-nums text-ink-600">
+          {plural(lectures.length, "lecture")} · {plural(exs.length, "exercise")}
+        </span>
       </div>
+
+      {lectures.length > 0 && (
+        <Section title="Lectures" hint={`${lectures.length} · tap to watch with its practice`}>
+          <ul className="space-y-1">
+            {lectures.map((v, i) => (
+              <LectureRow key={v.id} v={v} n={i + 1} />
+            ))}
+          </ul>
+        </Section>
+      )}
+
       {people.length > 0 && (
         <Section title="Contributors" hint={`${people.length}`}>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -387,12 +614,17 @@ function CourseView({ id }: { id: string }) {
     </article>
   );
 }
+
 function FacetView({ kind, name }: { kind: "field" | "level"; name: string }) {
   const f = (kind === "field" ? fieldSummaries : levelSummaries).find((x) => x.name === name);
   if (!f || (!f.exercises.length && !f.courses.length)) {
     return <Missing label={`Nothing catalogued under “${name}” yet.`} />;
   }
   const people = tallyAuthors(f.exercises);
+  const lectures = useMemo(
+    () => [...new Set(f.exercises.map((e) => e.meta.video_id).filter(Boolean))].map(getVideo),
+    [f],
+  );
   return (
     <article className="mt-8">
       <p className="label text-ink-600">{kind === "field" ? "Field" : "Level"}</p>
@@ -405,8 +637,18 @@ function FacetView({ kind, name }: { kind: "field" | "level"; name: string }) {
         style={{ background: "linear-gradient(90deg, #2f6b52, #c39422)" }}
       />
       <p className="mt-3 font-mono text-[11px] tabular-nums text-ink-600">
-        {plural(f.exercises.length, "exercise")} · {plural(f.courses.length, "course")} · {plural(people.length, "contributor")}
+        {plural(f.exercises.length, "exercise")} · {plural(f.courses.length, "course")} ·{" "}
+        {plural(people.length, "contributor")}
       </p>
+      {lectures.length > 0 && (
+        <Section title="Lectures" hint={`${lectures.length}`}>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {lectures.map((v) => (
+              <LectureCard key={v.id} v={v} />
+            ))}
+          </div>
+        </Section>
+      )}
       {f.courses.length > 0 && (
         <Section title="Courses" hint={`${f.courses.length}`}>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -438,28 +680,51 @@ function FacetView({ kind, name }: { kind: "field" | "level"; name: string }) {
     </article>
   );
 }
+
 /* ── the page ────────────────────────────────────────────────────────────── */
+
 export default function ExplorePage({ view, workspaceHref }: { view: ExploreView; workspaceHref: string | null }) {
   const viewKey = viewHash(view);
   const [q, setQ] = useState(view.type === "search" ? view.q : "");
   const scrollRef = useRef<HTMLDivElement>(null);
+
   // external navigation (chip taps, back/forward) resyncs the box; typing does
   // not re-trigger this because typing only replaceState()s the URL.
   useEffect(() => {
     setQ(view.type === "search" ? view.q : "");
     scrollRef.current?.scrollTo({ top: 0 });
   }, [viewKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const onQuery = (next: string) => {
+    // A YouTube link in the search box is an address. Resolve it the moment it
+    // becomes valid: lectures go to the lecture, playlists we own go to the
+    // course, anything else falls through to the search view's PastedLink card.
+    const link = parseYouTubeRef(next);
+    if (link) {
+      if (link.kind === "video") {
+        setQ("");
+        location.hash = videoHash(link.videoId, link.start);
+        return;
+      }
+      const course = findCourseByPlaylistId(link.playlistId);
+      if (course) {
+        setQ("");
+        location.hash = courseHash(course.id);
+        return;
+      }
+    }
     setQ(next);
     // keep the URL shareable without flooding history while typing
     const target = next.trim() ? searchHash(next) : view.type === "search" ? exploreHome : viewKey;
     history.replaceState(null, "", target);
   };
+
   const showing: ExploreView = q.trim()
     ? { type: "search", q }
     : view.type === "search"
       ? { type: "home" }
       : view;
+
   return (
     <div className="flex h-full min-h-0 flex-col">
       <header
@@ -479,6 +744,7 @@ export default function ExplorePage({ view, workspaceHref }: { view: ExploreView
           </a>
         )}
       </header>
+
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto scroll-slim">
         {view.type === "home" ? (
           /* The home hero stays mounted while typing — `showing` only swaps the
@@ -494,12 +760,15 @@ export default function ExplorePage({ view, workspaceHref }: { view: ExploreView
                   Practice what you watch.
                 </h1>
                 <p className="mt-2 font-mono text-[11px] tabular-nums text-zinc-100 [text-shadow:0_1px_10px_rgba(13,19,48,0.9)] sm:text-[12px]">
-                  {catalogStats.exercises} exercises · {catalogStats.courses} courses · {catalogStats.contributors}{" "}
-                  contributors · {catalogStats.concepts} concepts
+                  {catalogStats.lectures} lectures · {catalogStats.exercises} exercises · {catalogStats.courses} courses ·{" "}
+                  {catalogStats.contributors} contributors
                 </p>
                 <div className="mt-6 w-full max-w-xl sm:mt-8">
                   <SearchBox value={q} onChange={onQuery} large />
                 </div>
+                <p className="mt-2 font-mono text-[10px] text-zinc-300 [text-shadow:0_1px_10px_rgba(13,19,48,0.9)]">
+                  already watching something? paste the link
+                </p>
               </div>
             </div>
             <div className="mx-auto max-w-5xl px-5 pb-20 sm:px-8">

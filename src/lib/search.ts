@@ -2,18 +2,26 @@ import type { Course, Exercise } from "../content";
 import { courses, exercises, getCourse } from "../content";
 import { conceptCounts, contributorCounts, fieldOf, levelOf } from "./catalog";
 import type { Counted } from "./catalog";
+import { videos } from "./videos";
+import type { LectureVideo } from "./videos";
+
 /*
  * Client-side catalog search. Small corpus, so this is a straight scorer:
  * normalize both sides (lowercase, hyphens/slashes → spaces), require every
  * query token to land somewhere in the item, and rank by weighted match
  * quality (exact > word-prefix > substring). No index, no backend.
+ *
+ * Lectures are first-class results: searching a lecture's name finds the
+ * lecture, and a lecture's name is also searchable through its exercises.
  */
+
 const norm = (s: string) =>
   s
     .toLowerCase()
     .replace(/[-_/·,()]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+
 interface Haystack {
   text: string;
   weight: number;
@@ -21,6 +29,7 @@ interface Haystack {
    *  "graduate" as a substring, so a loose match returns the wrong level. */
   exactOnly?: boolean;
 }
+
 function score(tokens: string[], fields: Haystack[]): number {
   let total = 0;
   for (const t of tokens) {
@@ -39,6 +48,7 @@ function score(tokens: string[], fields: Haystack[]): number {
   }
   return total;
 }
+
 function rank<T>(items: T[], fieldsOf: (item: T) => Haystack[], tokens: string[]): T[] {
   return items
     .map((item) => [score(tokens, fieldsOf(item)), item] as const)
@@ -46,17 +56,22 @@ function rank<T>(items: T[], fieldsOf: (item: T) => Haystack[], tokens: string[]
     .sort((a, b) => b[0] - a[0])
     .map(([, item]) => item);
 }
+
 export interface SearchResults {
   query: string;
   courses: Course[];
+  videos: LectureVideo[];
   exercises: Exercise[];
   concepts: Counted[];
   people: Counted[];
   total: number;
 }
+
 export function searchCatalog(raw: string): SearchResults {
   const tokens = norm(raw).split(" ").filter(Boolean);
-  if (!tokens.length) return { query: raw, courses: [], exercises: [], concepts: [], people: [], total: 0 };
+  if (!tokens.length)
+    return { query: raw, courses: [], videos: [], exercises: [], concepts: [], people: [], total: 0 };
+
   const cs = rank(
     courses,
     (c) => [
@@ -65,10 +80,26 @@ export function searchCatalog(raw: string): SearchResults {
       { text: norm(c.creator), weight: 2 },
       { text: norm(c.institution), weight: 1.5 },
       { text: norm(c.field), weight: 1 },
+      // a pasted or remembered playlist id finds its course
+      { text: norm(c.playlist_id), weight: 2 },
       { text: norm(c.level), weight: 1, exactOnly: true },
     ],
     tokens,
   );
+
+  const vids = rank(
+    videos,
+    (v) => [
+      { text: norm(v.title), weight: 3 },
+      { text: norm(v.id), weight: 2.5 },
+      { text: norm(v.index ? `lecture ${v.index}` : ""), weight: 1.5 },
+      { text: norm(v.course?.name ?? ""), weight: 1.2 },
+      { text: norm(v.course?.creator ?? ""), weight: 1 },
+      { text: norm(v.exercises.map((e) => `${e.meta.concept} ${e.meta.concepts.join(" ")}`).join(" ")), weight: 1 },
+    ],
+    tokens,
+  );
+
   const exs = rank(
     exercises,
     (e) => [
@@ -77,20 +108,26 @@ export function searchCatalog(raw: string): SearchResults {
       { text: norm(e.meta.id), weight: 2 },
       { text: norm(e.meta.tags.join(" ")), weight: 2 },
       { text: norm(e.meta.author), weight: 1.5 },
+      // the lecture's name reaches its exercises too
+      { text: norm(e.meta.video_title), weight: 1.5 },
+      { text: norm(e.meta.video_id), weight: 1.5 },
       { text: norm(getCourse(e.meta.course)?.name ?? e.meta.playlist), weight: 1 },
       { text: norm(fieldOf(e)), weight: 1 },
       { text: norm(levelOf(e)), weight: 1, exactOnly: true },
     ],
     tokens,
   );
+
   const cons = rank(conceptCounts, (c) => [{ text: norm(c.name), weight: 3 }], tokens);
   const ppl = rank(contributorCounts, (p) => [{ text: norm(p.name), weight: 3 }], tokens);
+
   return {
     query: raw,
     courses: cs,
+    videos: vids,
     exercises: exs,
     concepts: cons,
     people: ppl,
-    total: cs.length + exs.length + cons.length + ppl.length,
+    total: cs.length + vids.length + exs.length + cons.length + ppl.length,
   };
 }
