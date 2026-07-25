@@ -96,10 +96,17 @@ Full reference in `content/SCHEMA.md`. The parts people get wrong:
 `exercise.md` is markdown. Tables, fenced code and `$…$` / `$$…$$` maths all
 render.
 
-Say what to implement, what the inputs look like, what to return, and what the
-edge cases are. Do not describe the algorithm step by step — the lecture already
-did. A learner should be able to finish the exercise from the brief alone,
-without reading your tests.
+Match the brief to what the lecture already did. When the lecture taught the
+idea thoroughly, keep the brief lean — restating a half-hour derivation is
+noise. When the lecture only *mentions* the idea in passing, the brief is
+where the learner actually meets it: open with the idea in plain words, a
+small worked example with real numbers, the formula in maths if there is one.
+Then pose the implementation as the way to make the idea concrete.
+
+Either way, say what to implement, what the inputs look like, what to return,
+and what the edge cases are. Do not describe your solution step by step —
+deriving it is the learner's work. A learner should be able to finish the
+exercise from the brief alone, without reading your tests.
 
 If you ship CSVs in `data/`, describe the columns. The app shows the data as a
 table next to the brief, and the files are mounted at `data/<name>` when the

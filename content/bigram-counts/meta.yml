@@ -1,0 +1,12 @@
+id: bigram-counts
+author: salehsargolzaee
+video_id: PaCmpygFfXo
+video_title: "The spelled-out intro to language modeling: building makemore"
+start: 900
+concept: "Counting character bigrams"
+tags: [python, language-modeling]
+concepts: [bigram-model, counting]
+playlist: "Neural Networks: Zero to Hero"
+runtime: pyodide
+packages: []
+course: nn-zero-to-hero

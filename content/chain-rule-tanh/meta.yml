@@ -1,0 +1,12 @@
+id: chain-rule-tanh
+author: salehsargolzaee
+video_id: VMj-3S1tku0
+video_title: "The spelled-out intro to neural networks and backpropagation: building micrograd"
+start: 3760
+concept: "Chain rule through a tanh neuron"
+tags: [python, backprop]
+concepts: [backpropagation, chain-rule, activations]
+playlist: "Neural Networks: Zero to Hero"
+runtime: pyodide
+packages: []
+course: nn-zero-to-hero
