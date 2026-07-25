@@ -1,0 +1,12 @@
+id: first-duplicate
+author: salehsargolzaee
+video_id: ZA-tUyM_y7s
+video_title: "Lecture 1 — Algorithms and Computation"
+start: 665
+concept: "First repeated value with a set"
+tags: [python, algorithms]
+concepts: [hashing, data-structures]
+playlist: "MIT 6.006 — Introduction to Algorithms"
+runtime: pyodide
+packages: []
+course: mit-6006
