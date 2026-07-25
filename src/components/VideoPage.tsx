@@ -496,6 +496,49 @@ export default function VideoPage({
                       />
                     </div>
                   </section>
+
+                  {/* a lecture with practice can always take more — at a new
+                      minute, or joining an existing moment with a different
+                      problem */}
+                  <details className="group mt-8 rounded-2xl bg-white ring-1 ring-ink-900/[0.08] open:shadow-sm">
+                    <summary className="flex cursor-pointer select-none items-center gap-2 px-5 py-3.5">
+                      <span aria-hidden className="text-[13px] text-accent">✦</span>
+                      <span className="text-[13.5px] font-medium text-ink-950">Write practice for this lecture</span>
+                      <span className="font-mono text-[10px] text-ink-500">pause where the idea lands, then copy</span>
+                      <span aria-hidden className="ml-auto text-ink-500 transition-transform group-open:rotate-90">›</span>
+                    </summary>
+                    <div className="border-t border-ink-900/[0.07] px-5 pb-5 pt-4">
+                      <p className="max-w-prose text-[13px] leading-6 text-ink-700">
+                        The timestamp below is wherever you are paused. If a moment already exists near it, prefer adding
+                        your problem at the same timestamp — same-moment exercises surface together as one card.
+                      </p>
+                      <div className="mt-3 overflow-hidden rounded-xl bg-ink-950">
+                        <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2">
+                          <span className="label text-ink-500">paste into content/&lt;your-id&gt;/meta.yml</span>
+                          <button
+                            onClick={copyMeta}
+                            className="ml-auto rounded-md border border-white/15 px-2 py-0.5 font-mono text-[10px] text-zinc-300 transition-colors hover:border-accent/60 hover:text-white"
+                          >
+                            {copied ? "copied" : "copy"}
+                          </button>
+                        </div>
+                        <pre className="overflow-x-auto px-4 py-3 font-mono text-[11.5px] leading-5 text-zinc-300">
+                          {metaSnippet}
+                        </pre>
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <a href={contributeGuideUrl} target="_blank" rel="noreferrer noopener" className={PILL}>
+                          The whole path ↗
+                        </a>
+                        <a href={exerciseTemplateUrl} target="_blank" rel="noreferrer noopener" className={PILL}>
+                          Exercise template ↗
+                        </a>
+                        <a href={schemaUrl} target="_blank" rel="noreferrer noopener" className={PILL}>
+                          Metadata reference ↗
+                        </a>
+                      </div>
+                    </div>
+                  </details>
                 </>
               ) : (
                 /* the front door for new content */
