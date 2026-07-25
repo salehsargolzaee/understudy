@@ -13,6 +13,7 @@
     "@codemirror/state": "^6.4.1",
     "@codemirror/view": "^6.34.1",
     "@uiw/react-codemirror": "^4.23.7",
+    "@vercel/analytics": "^2.0.1",
     "katex": "^0.16.11",
     "papaparse": "^5.4.1",
     "react": "^18.3.1",
