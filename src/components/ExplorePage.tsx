@@ -31,11 +31,12 @@ import {
 } from "../lib/routes";
 import type { ExploreView } from "../lib/routes";
 import { searchCatalog } from "../lib/search";
+import Star from "./Star";
 import Avatar from "./Avatar";
 import Brand from "./Brand";
 import ConceptChip from "./ConceptChip";
 import StarryHero from "./StarryHero";
-import { contributeGuideUrl } from "../lib/contribute";
+import { contributeHash } from "../lib/routes";
 import VideoThumb from "./VideoThumb";
 
 /**
@@ -60,9 +61,7 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
   return (
     <section className="mt-12">
       <div className="flex items-baseline gap-2">
-        <span aria-hidden className="text-[11px] leading-none text-accent">
-          ✦
-        </span>
+        <span aria-hidden className="text-[11px] leading-none text-accent"><Star /></span>
         <h2 className="label text-[11px] text-ink-800">{title}</h2>
         {hint && <span className="font-mono text-[10px] text-ink-600">{hint}</span>}
       </div>
@@ -78,9 +77,7 @@ function SearchBox({ value, onChange, large = false }: { value: string; onChange
         large ? "px-5 py-3.5 shadow-lg" : "px-4 py-2 shadow-sm"
       }`}
     >
-      <span aria-hidden className="shrink-0 text-accent">
-        ✦
-      </span>
+      <span aria-hidden className="shrink-0 text-accent"><Star /></span>
       <input
         type="text"
         value={value}
@@ -309,9 +306,7 @@ function FieldCard({ f, i }: { f: FacetSummary; i: number }) {
 function Missing({ label }: { label: string }) {
   return (
     <div className="mt-20 text-center">
-      <span aria-hidden className="text-2xl text-accent">
-        ✦
-      </span>
+      <span aria-hidden className="text-2xl text-accent"><Star /></span>
       <p className="mt-3 font-serif text-xl font-semibold text-ink-950">{label}</p>
       <a href={exploreHome} className="mt-2 inline-block text-[13px] text-verd underline underline-offset-2">
         Back to the catalog
@@ -460,9 +455,7 @@ function SearchResults({ q }: { q: string }) {
   if (!res.total) {
     return (
       <div className="mt-16 text-center">
-        <span aria-hidden className="text-2xl text-accent">
-          ✦
-        </span>
+        <span aria-hidden className="text-2xl text-accent"><Star /></span>
         <p className="mt-3 font-serif text-xl font-semibold text-ink-950">Nothing matches “{q.trim()}”</p>
         <p className="mt-1 text-[13px] text-ink-700">
           Try a lecture title, a concept, a course name, a field, a contributor's handle — or paste a YouTube link.
@@ -738,13 +731,11 @@ export default function ExplorePage({ view, workspaceHref }: { view: ExploreView
         <span className="label text-ink-500">Explore</span>
         <div className="ml-auto flex shrink-0 items-center gap-1">
           <a
-            href={contributeGuideUrl}
-            target="_blank"
-            rel="noreferrer noopener"
-            title="Write an exercise for a lecture"
+            href={contributeHash()}
+            title="Write an exercise, in the app"
             className="rounded-md px-2 py-1 text-[12px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.07] hover:text-white"
           >
-            Contribute ↗
+            Contribute
           </a>
           {workspaceHref && (
             <a
@@ -766,14 +757,25 @@ export default function ExplorePage({ view, workspaceHref }: { view: ExploreView
             {/* the catalog's own night sky; the search floats where it meets the paper */}
             <div className="relative">
               <StarryHero handle="understudy · explore" label="The understudy catalog, painted as a night sky" />
-              {/* the words live on the solid night, above the fade, so they never dissolve */}
+              {/* a feathered pool of night under the words — the painting keeps
+                  its edges, the text gets a quiet patch of sky to sit on */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0"
+                style={{
+                  background:
+                    "radial-gradient(ellipse 78% 68% at 50% 32%, rgba(10,14,30,0.66), rgba(10,14,30,0.32) 55%, transparent 78%)",
+                }}
+              />
               <div className="absolute inset-0 flex flex-col items-center justify-start px-5 pt-8 text-center sm:pt-12">
                 <h1 className="font-serif text-[30px] font-semibold leading-tight tracking-[-0.015em] text-white [text-shadow:0_2px_18px_rgba(13,19,48,0.9)] sm:text-[40px]">
                   Practice what you watch.
                 </h1>
                 <p className="mt-2 font-mono text-[11px] tabular-nums text-zinc-100 [text-shadow:0_1px_10px_rgba(13,19,48,0.9)] sm:text-[12px]">
-                  {catalogStats.lectures} lectures · {catalogStats.exercises} exercises · {catalogStats.courses} courses ·{" "}
-                  {catalogStats.contributors} contributors
+                  {catalogStats.lectures} lecture{catalogStats.lectures === 1 ? "" : "s"} ·{" "}
+                  {catalogStats.exercises} exercise{catalogStats.exercises === 1 ? "" : "s"} ·{" "}
+                  {catalogStats.courses} course{catalogStats.courses === 1 ? "" : "s"} ·{" "}
+                  {catalogStats.contributors} contributor{catalogStats.contributors === 1 ? "" : "s"}
                 </p>
                 <div className="mt-6 w-full max-w-xl sm:mt-8">
                   <SearchBox value={q} onChange={onQuery} large />

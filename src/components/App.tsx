@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
+import { flushSync } from "react-dom";
 import { exercises, getExercise } from "../content";
 import { loadPassed } from "../lib/storage";
-import { exerciseHash, exploreHome, parseExplore, parseVideoRoute, safeDecode } from "../lib/routes";
+import { exerciseHash, exploreHome, parseContributeRoute, parseExplore, parseVideoRoute, safeDecode } from "../lib/routes";
 import type { ExploreView } from "../lib/routes";
 import { warmPyodide } from "../runner";
 import ExercisePicker from "./ExercisePicker";
@@ -9,6 +10,8 @@ import ExerciseWorkspace from "./ExerciseWorkspace";
 import ExplorePage from "./ExplorePage";
 import ProfilePage from "./ProfilePage";
 import VideoPage from "./VideoPage";
+import ContributePage from "./ContributePage";
+import { completeOAuth } from "../lib/auth";
 
 /**
  * Four route families: explore (#/x…, also the default for an empty hash), a
@@ -19,12 +22,17 @@ type Route =
   | { kind: "explore"; view: ExploreView }
   | { kind: "video"; id: string; start: number | null }
   | { kind: "exercise"; id: string }
-  | { kind: "profile"; handle: string };
+  | { kind: "profile"; handle: string }
+  | { kind: "contribute"; videoId: string | null; start: number | null };
 
 const parseHash = (): Route => {
   const h = location.hash;
   if (h.startsWith("#/u/")) return { kind: "profile", handle: safeDecode(h.slice(4)) };
   if (h.startsWith("#/e/")) return { kind: "exercise", id: safeDecode(h.slice(4)) };
+  if (h.startsWith("#/new")) {
+    const c = parseContributeRoute(h.slice(5));
+    return { kind: "contribute", videoId: c.videoId, start: c.start };
+  }
   if (h.startsWith("#/v/")) {
     const v = parseVideoRoute(h.slice(4));
     if (v) return { kind: "video", id: v.id, start: v.start };
@@ -44,10 +52,17 @@ export default function App() {
   const [passed, setPassed] = useState(() => loadPassed());
 
   useEffect(() => {
-    const on = () => {
+    const apply = () => {
       const r = parseHash();
       setRoute(r);
       if (r.kind === "exercise") setLastExerciseId(r.id);
+    };
+    // route changes ride a view transition where the browser has one; the
+    // flushSync makes React commit inside the capture window
+    const on = () => {
+      const dvt = document as Document & { startViewTransition?: (cb: () => void) => void };
+      if (dvt.startViewTransition) dvt.startViewTransition(() => flushSync(apply));
+      else apply();
     };
     addEventListener("hashchange", on);
     return () => removeEventListener("hashchange", on);
@@ -55,6 +70,10 @@ export default function App() {
 
   useEffect(() => {
     warmPyodide();
+  }, []);
+
+  useEffect(() => {
+    void completeOAuth(); // finishes a GitHub sign-in redirect, if one is pending
   }, []);
 
   // A pasted link has to work even before any content exists, so the lecture
@@ -68,6 +87,10 @@ export default function App() {
         workspaceHref={lastExerciseId ? exerciseHash(lastExerciseId) : null}
       />
     );
+  }
+
+  if (route.kind === "contribute") {
+    return <ContributePage key={route.videoId ?? "pick"} videoId={route.videoId} start={route.start} />;
   }
 
   if (!exercises.length) {
@@ -93,10 +116,17 @@ export default function App() {
   }
 
   const exercise = getExercise(route.id);
+  // the top-rail picker is scoped to the lecture being worked, in video order;
+  // the whole catalog lives in Explore
+  const lectureExercises = exercise
+    ? exercises
+        .filter((e) => e.meta.video_id === exercise.meta.video_id)
+        .sort((a, b) => a.meta.start - b.meta.start)
+    : exercises;
   return (
     <div className="flex h-full min-h-0 flex-col">
       <ExercisePicker
-        exercises={exercises}
+        exercises={lectureExercises}
         currentId={exercise?.meta.id ?? null}
         passed={passed}
         onSelect={(id) => (location.hash = exerciseHash(id))}

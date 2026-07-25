@@ -1,4 +1,5 @@
 import { searchHash } from "../lib/routes";
+import Star from "./Star";
 /**
  * A concept, anywhere it appears, is this chip: a viridian capsule with a gold
  * mark that warms on hover. Tapping it runs the catalog search for that
@@ -14,9 +15,7 @@ export default function ConceptChip({ name, count, small = false }: { name: stri
         small ? "px-2 py-0.5 text-[9.5px]" : "px-2.5 py-1 text-[11px]"
       }`}
     >
-      <span aria-hidden className="text-accent opacity-80 group-hover:opacity-100">
-        ✦
-      </span>
+      <span aria-hidden className="text-accent opacity-80 group-hover:opacity-100"><Star /></span>
       {pretty}
       {count != null && count > 1 && (
         <span className="tabular-nums text-verd/60 transition-colors group-hover:text-ink-600">×{count}</span>

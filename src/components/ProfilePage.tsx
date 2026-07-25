@@ -6,6 +6,7 @@ import type { ContributorProfile, CourseContribution } from "../lib/contributors
 import { githubUrl } from "../lib/github";
 import { nightRailBg } from "../lib/nightRail";
 import { courseHash, exerciseHash, exploreHome, searchHash } from "../lib/routes";
+import Star from "./Star";
 import Avatar from "./Avatar";
 import Brand from "./Brand";
 import ConceptChip from "./ConceptChip";
@@ -22,9 +23,7 @@ function Section({ title, hint, children }: { title: string; hint?: string; chil
     <section className="mt-12">
       <div className="flex items-baseline gap-2">
         {/* a starlight mark leads each section so the page scans */}
-        <span aria-hidden className="text-[11px] leading-none text-accent">
-          ✦
-        </span>
+        <span aria-hidden className="text-[11px] leading-none text-accent"><Star /></span>
         <h2 className="label text-[11px] text-ink-800">{title}</h2>
         {hint && <span className="font-mono text-[10px] text-ink-600">{hint}</span>}
       </div>
@@ -323,7 +322,7 @@ export default function ProfilePage({ handle, backHref }: { handle: string; back
             href={exploreHome}
             className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[12px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.07] hover:text-white"
           >
-            <span aria-hidden className="text-[11px] text-accent-bright">✦</span>
+            <span aria-hidden className="text-[11px] text-accent-bright"><Star /></span>
             <span className="hidden sm:inline">Explore</span>
           </a>
           <a

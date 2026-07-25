@@ -59,3 +59,16 @@ export function parseVideoRoute(rest: string): { id: string; start: number | nul
   if (!id) return null;
   return { id, start: m[2] ? Number(m[2]) : null };
 }
+
+/** The in-app authoring flow: #/new, or #/new/v/<videoId>[/t/<sec>]. */
+export const contributeHash = (videoId?: string, start?: number | null) =>
+  videoId
+    ? `#/new/v/${encodeURIComponent(videoId)}${start && start > 0 ? `/t/${Math.floor(start)}` : ""}`
+    : "#/new";
+
+/** `rest` is everything after "#/new". */
+export function parseContributeRoute(rest: string): { videoId: string | null; start: number | null } {
+  const m = /^\/v\/([^/?#]+)(?:\/t\/(\d+))?/.exec(rest);
+  if (!m) return { videoId: null, start: null };
+  return { videoId: safeDecode(m[1]), start: m[2] ? Number(m[2]) : null };
+}

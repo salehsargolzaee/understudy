@@ -5,12 +5,13 @@ import type { LectureVideo, VideoMoment } from "../lib/videos";
 import { tallyAuthors, tallyConcepts } from "../lib/catalog";
 import { loadPassed } from "../lib/storage";
 import { nightRailBg } from "../lib/nightRail";
-import { courseHash, exerciseHash, exploreHome, videoHash } from "../lib/routes";
+import { contributeHash, courseHash, exerciseHash, exploreHome, videoHash } from "../lib/routes";
 import { formatTimestamp, youtubeUrl } from "../lib/youtube";
 import { useYouTubePlayer } from "../lib/useYouTubePlayer";
 import { useOEmbedTitle } from "../lib/useOEmbedTitle";
 import { contributeGuideUrl, exerciseTemplateUrl, schemaUrl } from "../lib/contribute";
 import { useIsDesktop } from "../lib/useMediaQuery";
+import Star from "./Star";
 import Avatar from "./Avatar";
 import Brand from "./Brand";
 import ConceptChip from "./ConceptChip";
@@ -376,7 +377,7 @@ export default function VideoPage({
             href={exploreHome}
             className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[12px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.07] hover:text-white"
           >
-            <span aria-hidden className="text-[11px] text-accent-bright">✦</span>
+            <span aria-hidden className="text-[11px] text-accent-bright"><Star /></span>
             <span className="hidden sm:inline">Explore</span>
           </a>
           {workspaceHref && (
@@ -479,7 +480,7 @@ export default function VideoPage({
 
                   <section className="mt-10">
                     <div className="flex items-baseline gap-2">
-                      <span aria-hidden className="text-[11px] leading-none text-accent">✦</span>
+                      <span aria-hidden className="text-[11px] leading-none text-accent"><Star /></span>
                       <h2 className="label text-[11px] text-ink-800">Practice, in lecture order</h2>
                       <span className="font-mono text-[10px] text-ink-600">{moments.length}</span>
                     </div>
@@ -502,15 +503,23 @@ export default function VideoPage({
                       problem */}
                   <details className="group mt-8 rounded-2xl bg-white ring-1 ring-ink-900/[0.08] open:shadow-sm">
                     <summary className="flex cursor-pointer select-none items-center gap-2 px-5 py-3.5">
-                      <span aria-hidden className="text-[13px] text-accent">✦</span>
+                      <span aria-hidden className="text-[13px] text-accent"><Star /></span>
                       <span className="text-[13.5px] font-medium text-ink-950">Write practice for this lecture</span>
-                      <span className="font-mono text-[10px] text-ink-500">pause where the idea lands, then copy</span>
+                      <span className="font-mono text-[10px] text-ink-500">pause where the idea lands, then write</span>
                       <span aria-hidden className="ml-auto text-ink-500 transition-transform group-open:rotate-90">›</span>
                     </summary>
                     <div className="border-t border-ink-900/[0.07] px-5 pb-5 pt-4">
-                      <p className="max-w-prose text-[13px] leading-6 text-ink-700">
-                        The timestamp below is wherever you are paused. If a moment already exists near it, prefer adding
-                        your problem at the same timestamp — same-moment exercises surface together as one card.
+                      <div className="flex flex-wrap items-center gap-3">
+                        <a href={contributeHash(videoId, Math.floor(currentTime || start || 0))} className={GOLD_BTN}>
+                          Write it here <span aria-hidden>→</span>
+                        </a>
+                        <span className="text-[12.5px] text-ink-700">
+                          brief, code, tests, proof and the pull request — all in the app, under your GitHub name
+                        </span>
+                      </div>
+                      <p className="mt-4 max-w-prose text-[13px] leading-6 text-ink-700">
+                        Doing it by hand instead? The timestamp below is wherever you are paused. If a moment already
+                        exists near it, prefer the same timestamp — same-moment exercises surface together as one card.
                       </p>
                       <div className="mt-3 overflow-hidden rounded-xl bg-ink-950">
                         <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2">
@@ -543,7 +552,7 @@ export default function VideoPage({
               ) : (
                 /* the front door for new content */
                 <section className="rounded-2xl bg-white p-6 ring-1 ring-ink-900/[0.08]">
-                  <span aria-hidden className="text-2xl text-accent">✦</span>
+                  <span aria-hidden className="text-2xl text-accent"><Star /></span>
                   <h2 className="mt-2 font-serif text-[21px] font-semibold text-ink-950">
                     No practice for this lecture yet
                   </h2>
@@ -556,13 +565,11 @@ export default function VideoPage({
                     runs your tests against your starter and against your solution before a person reads anything.
                   </p>
                   <div className="mt-4 flex flex-wrap items-center gap-2">
-                    <a
-                      href={contributeGuideUrl}
-                      target="_blank"
-                      rel="noreferrer noopener"
-                      className={GOLD_BTN}
-                    >
-                      Write the first exercise ↗
+                    <a href={contributeHash(videoId, Math.floor(currentTime || start || 0))} className={GOLD_BTN}>
+                      Write the first exercise →
+                    </a>
+                    <a href={contributeGuideUrl} target="_blank" rel="noreferrer noopener" className={PILL}>
+                      Or do it by hand ↗
                     </a>
                     <a href={exerciseTemplateUrl} target="_blank" rel="noreferrer noopener" className={PILL}>
                       Exercise template ↗

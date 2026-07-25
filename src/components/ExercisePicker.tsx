@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Exercise } from "../content";
 import { nightRailBg } from "../lib/nightRail";
 import { exploreHome } from "../lib/routes";
+import Star from "./Star";
 import Brand from "./Brand";
 interface Props {
   exercises: Exercise[];
@@ -44,9 +45,7 @@ export default function ExercisePicker({ exercises, currentId, passed, onSelect 
         title="Search and browse the whole catalog"
         className="flex shrink-0 items-center gap-1.5 rounded-md px-2 py-1 text-[12px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.07] hover:text-white"
       >
-        <span aria-hidden className="text-[11px] text-accent-bright">
-          ✦
-        </span>
+        <span aria-hidden className="text-[11px] text-accent-bright"><Star /></span>
         <span className="hidden md:inline">Explore</span>
       </a>
       <div className="relative min-w-0 flex-1 sm:max-w-sm" ref={ref}>
