@@ -11,3 +11,5 @@ content/demo-*
 # validator artifacts
 .validate-cache/
 validation-report.json
+.vercel
+.env*
