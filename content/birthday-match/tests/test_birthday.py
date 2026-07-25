@@ -36,10 +36,22 @@ def test_empty_class():
     assert first_birthday_match([]) is None
 
 
-def test_a_lecture_hall_of_thousands():
+def test_pigeonhole_worst_case_match_on_the_last_student():
+    # 336 distinct month-day pairs fill a 28-day calendar; the record grows
+    # to its maximum before the final student completes the pair
+    students = [
+        (f"s{i}", f"{1900 + i}-{i % 12 + 1:02d}-{i // 12 + 1:02d}")
+        for i in range(336)
+    ]
+    students.append(("tail", "2004-01-01"))
+    assert first_birthday_match(students) == ("s0", "tail")
+
+
+def test_a_big_hall_matches_early():
+    # 5000 students, but the first completed pair is at student 84
+    # (indices collide exactly when they differ by lcm(12, 28) = 84)
     students = [
         (f"s{i}", f"{1900 + i % 100}-{i % 12 + 1:02d}-{i % 28 + 1:02d}")
         for i in range(5000)
     ]
-    # keys collide exactly when indices differ by lcm(12, 28) = 84
     assert first_birthday_match(students) == ("s0", "s84")
