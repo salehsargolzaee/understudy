@@ -9,6 +9,7 @@ import { courseHash, exerciseHash, exploreHome, videoHash } from "../lib/routes"
 import { formatTimestamp, youtubeUrl } from "../lib/youtube";
 import { useYouTubePlayer } from "../lib/useYouTubePlayer";
 import { useOEmbedTitle } from "../lib/useOEmbedTitle";
+import { contributeGuideUrl, exerciseTemplateUrl, schemaUrl } from "../lib/contribute";
 import { useIsDesktop } from "../lib/useMediaQuery";
 import Avatar from "./Avatar";
 import Brand from "./Brand";
@@ -330,9 +331,35 @@ export default function VideoPage({
   const next = myPos >= 0 && myPos + 1 < siblings.length ? siblings[myPos + 1] : null;
 
   const src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?start=${Math.max(
+
     0,
     Math.floor(start ?? 0),
   )}&rel=0&modestbranding=1&playsinline=1`;
+
+  // Everything a contributor would otherwise have to look up by hand: the id,
+  // the lecture's real name, the second they are paused at, the course.
+  const [copied, setCopied] = useState(false);
+  const pasteTitle = video.title || fetchedTitle;
+  const metaSnippet = [
+    `video_id: ${videoId}`,
+    pasteTitle
+      ? `video_title: ${JSON.stringify(pasteTitle)}`
+      : `video_title: ""   # leave empty — the PR check fills in the exact name`,
+    `start: ${Math.max(0, Math.floor(currentTime || start || 0))}`,
+    video.courseId
+      ? `course: ${video.courseId}`
+      : `course: ""   # add the course under content/courses/ first`,
+  ].join("\n");
+
+  const copyMeta = async () => {
+    try {
+      await navigator.clipboard.writeText(metaSnippet);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1600);
+    } catch {
+      /* clipboard blocked — the block is selectable */
+    }
+  };
 
   return (
     <div className="flex h-full min-h-0 flex-col">
@@ -481,21 +508,48 @@ export default function VideoPage({
                     {video.title
                       ? "The lecture is catalogued, but nobody has written exercises against it."
                       : "This lecture is not in the catalog at all — we only know the link you pasted."}{" "}
-                    An exercise is a folder with a brief, starter code and tests; it carries this video's id, its
-                    timestamp, and its name. Write the first one and it will appear right here, at the minute it belongs
-                    to.
+                    An exercise is a folder of plain files: a brief, starter code, a reference solution, pytest
+                    tests and a short metadata file. Copy the template, fill it in, open a pull request. A check
+                    runs your tests against your starter and against your solution before a person reads anything.
                   </p>
                   <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <a
+                      href={contributeGuideUrl}
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      className={GOLD_BTN}
+                    >
+                      Write the first exercise ↗
+                    </a>
+                    <a href={exerciseTemplateUrl} target="_blank" rel="noreferrer noopener" className={PILL}>
+                      Exercise template ↗
+                    </a>
+                    <a href={schemaUrl} target="_blank" rel="noreferrer noopener" className={PILL}>
+                      Metadata reference ↗
+                    </a>
                     <a href={exploreHome} className={PILL}>
                       Browse what does have practice
                     </a>
-                    <a href={youtubeUrl(videoId, start ?? 0)} target="_blank" rel="noreferrer noopener" className={PILL}>
-                      Open on YouTube ↗
-                    </a>
                   </div>
-                  <p className="mt-4 font-mono text-[10.5px] text-ink-500">
-                    video_id: {videoId}
-                    {!video.title && " · video_title: (none on file)"}
+                  <div className="mt-5 overflow-hidden rounded-xl bg-ink-950">
+                    <div className="flex items-center gap-2 border-b border-white/10 px-4 py-2">
+                      <span className="label text-ink-500">
+                        paste into content/&lt;your-id&gt;/meta.yml
+                      </span>
+                      <button
+                        onClick={copyMeta}
+                        className="ml-auto rounded-md border border-white/15 px-2 py-0.5 font-mono text-[10px] text-zinc-300 transition-colors hover:border-accent/60 hover:text-white"
+                      >
+                        {copied ? "copied" : "copy"}
+                      </button>
+                    </div>
+                    <pre className="overflow-x-auto px-4 py-3 font-mono text-[11.5px] leading-5 text-zinc-300">
+                      {metaSnippet}
+                    </pre>
+                  </div>
+                  <p className="mt-3 font-mono text-[10.5px] text-ink-500">
+                    the timestamp above is wherever you are paused
+                    {!video.title && !fetchedTitle && " · video_title: (none on file yet)"}
                   </p>
                 </section>
               )}

@@ -1,0 +1,97 @@
+name: content
+
+# pull_request (not pull_request_target) so this runs for forks with a read-only
+# token and no access to secrets. The job executes contributed Python, so it must
+# never be given anything worth stealing — do not add secrets to this workflow.
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: content-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  exercises:
+    name: exercises
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install the checker's own dependency
+        run: python -m pip install --disable-pip-version-check --quiet pyyaml
+
+      # Per-exercise virtualenvs are cached across runs by the set of packages
+      # an exercise declares, so a pandas exercise does not re-download pandas.
+      - name: Restore package cache
+        uses: actions/cache@v4
+        with:
+          path: .validate-cache
+          key: validate-venvs-${{ runner.os }}-${{ hashFiles('content/*/meta.yml', 'templates/exercise/meta.yml') }}
+          restore-keys: validate-venvs-${{ runner.os }}-
+
+      - name: Check changed exercises
+        if: github.event_name == 'pull_request'
+        run: |
+          python tools/validate_exercises.py \
+            --changed-from "${{ github.event.pull_request.base.sha }}" \
+            --summary "$GITHUB_STEP_SUMMARY" \
+            --json validation-report.json
+
+      - name: Check every exercise
+        if: github.event_name != 'pull_request'
+        run: |
+          python tools/validate_exercises.py --all \
+            --summary "$GITHUB_STEP_SUMMARY" \
+            --json validation-report.json
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: validation-report
+          path: validation-report.json
+          if-no-files-found: ignore
+
+  site:
+    name: site build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      # `setup-node`'s npm cache needs a committed lockfile; add `cache: npm`
+      # above once package-lock.json is in the repo.
+      - name: Install
+        run: |
+          if [ -f package-lock.json ]; then npm ci; else npm install --no-audit --no-fund; fi
+      - name: Build
+        run: npm run build
+
+  template:
+    # The scaffold in templates/ is not catalog content: the app never loads it
+    # and the exercise check never scans it. This job copies it to a scratch
+    # directory and runs the mechanics there, so the thing we tell strangers to
+    # copy cannot quietly rot.
+    name: template smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install --disable-pip-version-check --quiet pyyaml
+      - run: python tools/validate_exercises.py --template --summary "$GITHUB_STEP_SUMMARY"

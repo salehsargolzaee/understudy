@@ -35,6 +35,7 @@ import Avatar from "./Avatar";
 import Brand from "./Brand";
 import ConceptChip from "./ConceptChip";
 import StarryHero from "./StarryHero";
+import { contributeGuideUrl } from "../lib/contribute";
 import VideoThumb from "./VideoThumb";
 
 /**
@@ -735,14 +736,25 @@ export default function ExplorePage({ view, workspaceHref }: { view: ExploreView
           <Brand />
         </a>
         <span className="label text-ink-500">Explore</span>
-        {workspaceHref && (
+        <div className="ml-auto flex shrink-0 items-center gap-1">
           <a
-            href={workspaceHref}
-            className="ml-auto rounded-md px-2 py-1 text-[12px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.07] hover:text-white"
+            href={contributeGuideUrl}
+            target="_blank"
+            rel="noreferrer noopener"
+            title="Write an exercise for a lecture"
+            className="rounded-md px-2 py-1 text-[12px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.07] hover:text-white"
           >
-            Workspace →
+            Contribute ↗
           </a>
-        )}
+          {workspaceHref && (
+            <a
+              href={workspaceHref}
+              className="rounded-md px-2 py-1 text-[12px] font-medium text-zinc-300 transition-colors hover:bg-white/[0.07] hover:text-white"
+            >
+              Workspace →
+            </a>
+          )}
+        </div>
       </header>
 
       <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto scroll-slim">

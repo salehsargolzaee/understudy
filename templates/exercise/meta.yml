@@ -1,0 +1,48 @@
+# Exercise metadata. Field reference: content/SCHEMA.md
+#
+# `id` must equal the folder name, and the folder name is the id in the URL.
+# Keep it lowercase, hyphenated, short.
+id: your-exercise-id
+
+# Your GitHub handle. It drives your avatar and your contributor profile page.
+author: your-github-handle
+
+# A file under content/courses/, without the extension. Add the course in the
+# same pull request if it does not exist yet.
+course: nn-zero-to-hero
+
+# The lecture's 11-character YouTube id — the `v=` part of the link, not a URL.
+video_id: VMj-3S1tku0
+
+# The lecture's exact name. You do not have to type this: delete the line and
+# the pull-request check hands you the exact value, or run
+#   python tools/validate_exercises.py --fix
+# and it writes it in. Never invent a name — it has to match the video.
+video_title: "The spelled-out intro to neural networks and backpropagation: building micrograd"
+
+# Whole seconds into the lecture, at the moment this idea is taught — not the
+# start of the video, and not the recap.
+start: 1387
+
+# One line. This is the name shown in menus, cards and search results.
+concept: "Numerical derivative of a function"
+
+# The catalog's facets. Lowercase-hyphenated slugs, at least one. Reuse a slug
+# that already exists in content/ rather than coining a near-duplicate.
+concepts: [derivatives, numerical-methods]
+
+# Optional free-form labels, shown beside the brief.
+tags: [calculus, python]
+
+# `pyodide` runs the tests in the learner's browser. That is the default and the
+# only runtime that currently works; see content/SCHEMA.md before using `modal`.
+runtime: pyodide
+
+# Extra PyPI packages your tests or solution import. The check installs exactly
+# this list; the browser installs it at run time. Leave it [] for the standard
+# library. numpy, pandas, scipy, sympy, matplotlib and scikit-learn are known to
+# work in the browser.
+packages: []
+
+# Optional. Inherited from the course when omitted.
+level: undergraduate

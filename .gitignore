@@ -7,3 +7,7 @@ dist
 # Session-2 throwaway demo fixture (demo exercises + demo course files). Delete with:
 #   rm -rf content/demo-*
 content/demo-*
+
+# validator artifacts
+.validate-cache/
+validation-report.json
