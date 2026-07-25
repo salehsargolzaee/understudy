@@ -39,8 +39,3 @@ def test_step_size_is_honoured():
 def test_symmetry_at_a_kink():
     # abs() has no derivative at 0; the symmetric estimate is 0 anyway
     assert numeric_derivative(abs, 0.0) == pytest.approx(0.0, abs=1e-9)
-```
-
----
-
-## 8. App changes

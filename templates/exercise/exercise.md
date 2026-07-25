@@ -27,13 +27,3 @@ Implement `numeric_derivative(f, x, h=1e-6)`:
 Return the central-difference estimate as a float. Use the formula exactly as
 written — the forward difference `(f(x + h) - f(x)) / h` is a different estimate
 and gives different answers.
-
-```python
-numeric_derivative(lambda x: x ** 2, 3.0)   # -> 6.000000...
-numeric_derivative(math.sin, 0.0)           # -> 0.999999...
-```
-
-Two things to notice while you write it: the estimate is exact for polynomials up
-to degree two no matter how large `h` is, and a function with a kink (like
-`abs`) still returns a number here — the symmetry of the formula hides the fact
-that the derivative does not exist.
