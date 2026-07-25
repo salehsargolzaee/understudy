@@ -5,7 +5,7 @@ export const APP_NAME = "understudy";
 export default function Brand() {
   return (
     <>
-      <span className="h-4 w-4 shrink-0 rounded bg-accent" aria-hidden />
+      <img src="/logo.svg" alt="" className="h-5 w-5 shrink-0" aria-hidden />
       <span className="hidden font-serif text-[15px] tracking-tight text-zinc-100 sm:block">{APP_NAME}</span>
     </>
   );
