@@ -1,9 +1,9 @@
-id: growth-order
+id: classify-growth
 author: salehsargolzaee
 video_id: ZA-tUyM_y7s
 video_title: "Lecture 1 — Algorithms and Computation"
 start: 1850
-concept: "Ordering functions by growth"
+concept: "Reading a growth class off doubling measurements"
 tags: [python, asymptotics]
 concepts: [asymptotics, complexity]
 playlist: "MIT 6.006 — Introduction to Algorithms"
