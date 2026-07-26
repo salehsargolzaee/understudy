@@ -391,7 +391,7 @@ export default function VideoPage({
         </div>
       </header>
 
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto scroll-slim">
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-slim">
         {/* ── theatre: the player, and under it the practice rail ─────────── */}
         <div
           ref={theatreRef}

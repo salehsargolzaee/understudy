@@ -138,7 +138,7 @@ function LectureCard({ v }: { v: LectureVideo }) {
   return (
     <a
       href={videoHash(v.id)}
-      className="group flex gap-3 rounded-2xl bg-white p-3 ring-1 ring-ink-900/[0.08] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:ring-accent/50"
+      className="group flex min-w-0 gap-3 rounded-2xl bg-white p-3 ring-1 ring-ink-900/[0.08] shadow-sm transition hover:-translate-y-0.5 hover:shadow-md hover:ring-accent/50"
     >
       <span className="relative shrink-0 overflow-hidden rounded-xl">
         <VideoThumb id={v.id} className="h-[58px] w-[104px]" />
@@ -752,7 +752,7 @@ export default function ExplorePage({ view, workspaceHref }: { view: ExploreView
         </div>
       </header>
 
-      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto scroll-slim">
+      <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-slim">
         {view.type === "home" ? (
           /* The home hero stays mounted while typing — `showing` only swaps the
              content BELOW it — so the search input never loses focus on the

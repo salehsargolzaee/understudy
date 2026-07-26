@@ -346,7 +346,7 @@ export default function ProfilePage({ handle, backHref }: { handle: string; back
         </div>
       </header>
       {/* The profile floats directly on the site's canvas — no framed surface. */}
-      <div className="min-h-0 flex-1 overflow-y-auto scroll-slim">
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-slim">
         {profile ? <ProfileBody profile={profile} /> : <EmptyProfile handle={handle} />}
       </div>
     </div>

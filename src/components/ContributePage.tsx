@@ -256,7 +256,7 @@ export default function ContributePage({ videoId, start }: { videoId: string | n
     return (
       <div className="flex h-full min-h-0 flex-col">
         {rail}
-        <div className="min-h-0 flex-1 overflow-y-auto scroll-slim">
+        <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-slim">
           <LecturePicker />
         </div>
       </div>
@@ -265,7 +265,7 @@ export default function ContributePage({ videoId, start }: { videoId: string | n
   return (
     <div className="flex h-full min-h-0 flex-col">
       {rail}
-      <div className="min-h-0 flex-1 overflow-y-auto scroll-slim">
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-slim">
         <Authoring videoId={videoId} routeStart={start} />
       </div>
     </div>

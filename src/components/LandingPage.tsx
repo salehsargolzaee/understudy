@@ -194,10 +194,10 @@ export default function LandingPage() {
   const lecture = showcase;
   const n = landingStats.exercises;
 
-  // the text column, which the stars are not allowed to sit behind
-  const heroAvoid = desktop
-    ? { x0: 0.14, y0: 0.0, x1: 0.86, y1: 0.47 }
-    : { x0: 0.0, y0: 0.0, x1: 1.0, y1: 0.46 };
+  // desktop: stars keep out of the text column. Phone: the whole star field
+  // lives below the text, in the sky the hero reserves under it.
+  const heroAvoid = desktop ? { x0: 0.14, y0: 0.0, x1: 0.86, y1: 0.47 } : undefined;
+  const heroBounds = desktop ? { top: 0.05, bottom: 0.68 } : { top: 0.7, bottom: 0.86 };
 
   const nextStar = lecturesWithout[0] ?? null;
 
@@ -228,7 +228,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto scroll-slim">
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-slim">
         {/* ── the sky, and the claim ──────────────────────────────────────── */}
         <div className="relative">
         <CatalogSky
@@ -240,7 +240,7 @@ export default function LandingPage() {
               : "An empty night sky: no exercises have been written yet"
           }
           avoid={heroAvoid}
-          bounds={{ top: 0.05, bottom: 0.68 }}
+          bounds={heroBounds}
           interactive
           scrim="radial-gradient(ellipse 80% 58% at 50% 26%, rgba(7,11,30,0.72), rgba(7,11,30,0.36) 58%, transparent 80%)"
         >
@@ -251,7 +251,7 @@ export default function LandingPage() {
               <br />
               The practice belongs beside them.
             </h1>
-            <p className={`mt-4 max-w-xl font-mono text-[11px] leading-5 text-zinc-300 sm:text-[12.5px] ${SHADE}`}>
+            <p className="mt-4 max-w-xl font-mono text-[11px] leading-5 text-zinc-100 [text-shadow:0_1px_6px_rgba(7,11,30,1),0_2px_26px_rgba(7,11,30,0.95)] sm:text-[12.5px]">
               the best universities and teachers give whole courses away. The practice is ours to
               build: real exercises beside the lecture, at the minute each idea is taught, by whoever
               just learned it.
