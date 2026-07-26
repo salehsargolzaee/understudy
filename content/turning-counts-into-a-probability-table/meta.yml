@@ -1,0 +1,15 @@
+id: turning-counts-into-a-probability-table
+author: salehsargolzaee
+course: nn-zero-to-hero
+video_id: PaCmpygFfXo
+video_title: "The spelled-out intro to language modeling: building makemore"
+start: 1860
+concept: Turning counts into a probability table
+concepts:
+  - bigram-model
+  - probability
+tags:
+  - python
+  - probability
+runtime: pyodide
+packages: []
