@@ -197,7 +197,8 @@ export default function LandingPage() {
   // desktop: stars keep out of the text column. Phone: the sky is overhead —
   // the star field fills the dark above the words, the way a night sky does.
   const heroAvoid = desktop ? { x0: 0.14, y0: 0.0, x1: 0.86, y1: 0.47 } : undefined;
-  const heroBounds = desktop ? { top: 0.05, bottom: 0.68 } : { top: 0.04, bottom: 0.19 };
+  const heroBounds = desktop ? { top: 0.05, bottom: 0.68 } : undefined;
+  const heroBoundsPx = desktop ? undefined : { top: 26, bottom: 160 };
 
   const nextStar = lecturesWithout[0] ?? null;
 
@@ -241,6 +242,7 @@ export default function LandingPage() {
           }
           avoid={heroAvoid}
           bounds={heroBounds}
+          boundsPx={heroBoundsPx}
           starScale={desktop ? 1 : 0.6}
           natural={!desktop}
           interactive

@@ -55,4 +55,4 @@ practice for, an idea, a problem: open an issue or reach out.
 
 ## License
 
-[MIT](LICENSE).
+[AGPL-3.0](LICENSE). The code is free to use, study, and build on; anything built on it must stay open the same way. © 2026 Saleh Sargolzaei.
