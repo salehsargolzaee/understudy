@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo , useState } from "react";
 import { exercises as allExercises } from "../content";
 import type { Exercise } from "../content";
 import { getContributor } from "../lib/contributors";
@@ -177,6 +177,7 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
     { label: "Concepts", value: profile.concepts.length, hint: "Distinct concept tags across their exercises." },
     { label: "Fields", value: profile.fields.length, hint: "Distinct subject fields their exercises fall under." },
   ];
+  const [statHint, setStatHint] = useState<string | null>(null);
   return (
     <div>
       {/* The contributor's work as a night sky, literally: one clickable star
@@ -215,29 +216,36 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
             </a>
           </p>
         </header>
-        {/* headline numbers: no tiles, just the numbers in the flow of the page */}
-        <section className="mt-10 flex flex-wrap gap-x-10 gap-y-5">
-          {stats.map((s) => (
-            <div key={s.label} className="group relative">
-              <p className="font-serif text-[34px] font-semibold leading-none tabular-nums text-ink-950">{s.value}</p>
-              <p className="label mt-1.5 flex items-center gap-1 text-ink-700">
-                {s.label}
-                <span
-                  aria-hidden
-                  className="grid h-3 w-3 place-items-center rounded-full border border-ink-900/25 font-sans text-[8px] font-bold leading-none text-ink-500/80"
-                >
-                  i
-                </span>
-              </p>
-              <span
-                role="tooltip"
-                className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 hidden w-max max-w-[220px] -translate-x-1/2 rounded-lg bg-ink-950 px-3 py-2 text-left text-[11px] font-normal normal-case leading-snug tracking-normal text-zinc-100 shadow-lg group-hover:block"
+        {/* headline numbers: no tiles, just the numbers in the flow of the page.
+            Hints share one line below the row, so nothing floats or clips. */}
+        <section className="mt-10">
+          <div className="flex flex-wrap gap-x-10 gap-y-5">
+            {stats.map((s) => (
+              <button
+                key={s.label}
+                type="button"
+                onClick={() => setStatHint((h) => (h === s.hint ? null : s.hint))}
+                onMouseEnter={() => setStatHint(s.hint)}
+                onMouseLeave={() => setStatHint(null)}
+                className="text-left"
+                aria-label={`${s.label}: ${s.hint}`}
               >
-                {s.hint}
-                <span className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-ink-950" />
-              </span>
-            </div>
-          ))}
+                <p className="font-serif text-[34px] font-semibold leading-none tabular-nums text-ink-950">{s.value}</p>
+                <p className="label mt-1.5 flex items-center gap-1 text-ink-700">
+                  {s.label}
+                  <span
+                    aria-hidden
+                    className="grid h-3 w-3 place-items-center rounded-full border border-ink-900/25 font-sans text-[8px] font-bold leading-none text-ink-500/80"
+                  >
+                    i
+                  </span>
+                </p>
+              </button>
+            ))}
+          </div>
+          <p className="mt-3 min-h-[1.25rem] max-w-prose text-[12px] leading-5 text-ink-600" aria-live="polite">
+            {statHint ?? ""}
+          </p>
         </section>
       {/* spread across fields */}
       <Section title="Across fields">
