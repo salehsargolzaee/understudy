@@ -44,6 +44,9 @@ export interface LayoutOptions {
   scale?: number;
   /** fewer placement candidates: irregular, cluster-prone, like a real sky */
   natural?: boolean;
+  /** pixel zones (negative = measured from the bottom). Stars fill zones in
+   *  proportion to their height, so a growing catalog flows into new sky. */
+  zonesPx?: { top: number; bottom: number }[];
 }
 
 export interface PaintOptions {
@@ -76,10 +79,27 @@ const starRadius = (w: number, h: number) => clamp(Math.min(w, h) * 0.032, 9, 24
 export function layoutStars(exercises: Exercise[], w: number, h: number, opts: LayoutOptions = {}): SkyStar[] {
   if (!exercises.length || w < 60 || h < 60) return [];
 
-  const R = starRadius(w, h) * (opts.scale ?? 1);
+  // more exercises, smaller stars: two hundred should read as a starfield
+  const crowd = clamp(Math.sqrt(9 / exercises.length), 0.5, 1);
+  const R = starRadius(w, h) * (opts.scale ?? 1) * crowd;
   const mx = Math.min(R * 1.8, w * 0.12);
-  const top = (opts.top ?? 0.06) * h;
-  const bottom = (opts.bottom ?? 0.72) * h;
+
+  const px = (v: number) => (v < 0 ? h + v : v);
+  const zones = (opts.zonesPx?.length
+    ? opts.zonesPx.map((z) => ({ top: px(z.top), bottom: px(z.bottom) }))
+    : [{ top: (opts.top ?? 0.06) * h, bottom: (opts.bottom ?? 0.72) * h }]
+  ).filter((z) => z.bottom - z.top >= R * 2);
+  if (!zones.length) return [];
+
+  // deterministic proportional assignment: each star goes to the zone with the
+  // most unmet quota, so growth spills into the next zone instead of piling up
+  const heights = zones.map((z) => z.bottom - z.top);
+  const totalH = heights.reduce((a, b) => a + b, 0);
+  const quota = heights.map((hh) => (hh / totalH) * exercises.length);
+  const filled = zones.map(() => 0);
+
+  const top = zones[0].top;
+  const bottom = zones[zones.length - 1].bottom;
   if (bottom - top < R * 2) return [];
 
   const a = opts.avoid;
@@ -89,6 +109,11 @@ export function layoutStars(exercises: Exercise[], w: number, h: number, opts: L
 
   const out: SkyStar[] = [];
   for (const exercise of exercises) {
+    let zi = 0;
+    for (let j = 1; j < zones.length; j++) if (quota[j] - filled[j] > quota[zi] - filled[zi]) zi = j;
+    filled[zi]++;
+    const zone = zones[zi];
+
     const rng = makeRng(`star:${exercise.meta.id}`);
     let best: { x: number; y: number } | null = null;
     let bestScore = -Infinity;
@@ -97,10 +122,10 @@ export function layoutStars(exercises: Exercise[], w: number, h: number, opts: L
     const tries = opts.natural ? 8 : 56;
     for (let i = 0; i < tries; i++) {
       const x = mx + rng() * (w - 2 * mx);
-      const y = top + rng() * (bottom - top);
+      const y = zone.top + rng() * (zone.bottom - zone.top);
       if (!fallback) fallback = { x, y };
       if (box && x > box.x0 && x < box.x1 && y > box.y0 && y < box.y1) continue;
-      let score = Math.min(x, w - x, y - top + R, bottom - y + R);
+      let score = Math.min(x, w - x, y - zone.top + R, zone.bottom - y + R);
       for (const s of out) score = Math.min(score, Math.hypot(s.x - x, s.y - y));
       if (score > bestScore) {
         bestScore = score;

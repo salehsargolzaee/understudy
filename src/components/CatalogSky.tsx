@@ -26,6 +26,8 @@ interface Props {
   bounds?: { top?: number; bottom?: number };
   /** pixel bounds beat fractional ones: same strip on every device */
   boundsPx?: { top?: number; bottom?: number };
+  /** several strips of sky; negative pixels measure from the bottom */
+  zonesPx?: { top: number; bottom: number }[];
   starScale?: number;
   natural?: boolean;
   fade?: boolean;
@@ -90,6 +92,7 @@ export default function CatalogSky({
   avoid,
   bounds,
   boundsPx,
+  zonesPx,
   starScale,
   natural,
   fade = false,
@@ -146,10 +149,10 @@ export default function CatalogSky({
       const px = boundsPx
         ? { top: boundsPx.top != null ? boundsPx.top / box.h : undefined, bottom: boundsPx.bottom != null ? boundsPx.bottom / box.h : undefined }
         : {};
-      return layoutStars(exercises, box.w, box.h, { avoid, scale: starScale, natural, ...bounds, ...px });
+      return layoutStars(exercises, box.w, box.h, { avoid, scale: starScale, natural, zonesPx, ...bounds, ...px });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [exercises, box.w, box.h, avoidKey, bounds?.top, bounds?.bottom, boundsPx?.top, boundsPx?.bottom, starScale, natural],
+    [exercises, box.w, box.h, avoidKey, bounds?.top, bounds?.bottom, boundsPx?.top, boundsPx?.bottom, starScale, natural, zonesPx],
   );
 
   useEffect(() => {
