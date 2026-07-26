@@ -27,6 +27,8 @@ export interface RunRequest {
   /** filename -> contents */
   data: Record<string, string>;
   packages: string[];
+  /** "script" executes submission.py as a plain file, no pytest. */
+  mode?: "pytest" | "script";
 }
 
 export type RunEvent =

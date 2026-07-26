@@ -291,6 +291,8 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
     phase: "idle", statusMessage: "", tests: [], summary: null, output: "", crash: null, coldStart: true,
   });
   const [tryTarget, setTryTarget] = useState<"solution" | "starter">("solution");
+  const [tryKind, setTryKind] = useState<"tests" | "script">("tests");
+  const [activeFile, setActiveFile] = useState<"starter" | "solution" | "tests">("starter");
   const tryAbort = useRef<AbortController | null>(null);
   useEffect(() => () => tryAbort.current?.abort(), []);
   const tryBusy = tryState.phase === "booting" || tryState.phase === "installing" || tryState.phase === "running";
@@ -299,6 +301,7 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
     tryAbort.current?.abort();
     const ctrl = new AbortController();
     tryAbort.current = ctrl;
+    setTryKind("tests");
     setTryTarget(target);
     setTryState((s) => ({ ...s, phase: "booting", statusMessage: "Starting Python…", crash: null }));
     const req: RunRequest = {
@@ -322,6 +325,41 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
       }
     } catch { /* aborted */ }
   }, [id, solution, starter, tests, packagesIn]);
+
+  const runFile = useCallback(async (target: "starter" | "solution") => {
+    tryAbort.current?.abort();
+    const ctrl = new AbortController();
+    tryAbort.current = ctrl;
+    setTryKind("script");
+    setTryTarget(target);
+    setTryState((s) => ({ ...s, phase: "booting", statusMessage: "Starting Python…", crash: null, output: "" }));
+    const req: RunRequest = {
+      exerciseId: `try-${id || "exercise"}`,
+      submission: target === "solution" ? solution : starter,
+      tests: {},
+      data: {},
+      packages: splitList(packagesIn),
+      mode: "script",
+    };
+    try {
+      const runner = pickRunner("pyodide");
+      let out = "";
+      for await (const ev of runner.run(req, ctrl.signal)) {
+        if (ctrl.signal.aborted) return;
+        if (ev.type === "status") setTryState((s) => ({ ...s, phase: ev.phase, statusMessage: ev.message }));
+        if (ev.type === "stdout" || ev.type === "stderr") out += ev.text;
+        if (ev.type === "result")
+          setTryState({ phase: "done", statusMessage: "", tests: [], summary: ev.summary, output: ev.output || out, crash: null, coldStart: false });
+        if (ev.type === "crash")
+          setTryState({ phase: "done", statusMessage: "", tests: [], summary: null, output: out, crash: { message: ev.message, traceback: ev.traceback }, coldStart: false });
+      }
+    } catch { /* aborted */ }
+  }, [id, solution, starter, packagesIn]);
+
+  const stopTry = () => {
+    tryAbort.current?.abort();
+    setTryState((s) => ({ ...s, phase: "cancelled", statusMessage: "" }));
+  };
 
   const runProof = useCallback(async () => {
     proofAbort.current?.abort();
@@ -589,57 +627,96 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
 
       {/* ── code ───────────────────────────────────────────────────────── */}
       <Section title="Code" hint="tests import the learner's file as `submission`">
-        {([
-          ["starter.py — what the learner opens; imports cleanly, work left undone", starter, setStarter],
-          ["solution.py — the reference answer; never shipped to the browser", solution, setSolution],
-          [`tests/${testFileName(id)} — must fail on the starter, pass on the solution`, tests, setTests],
-        ] as const).map(([label, value, set]) => (
-          <div key={label} className="mb-4 overflow-hidden rounded-xl border border-ink-900/15 bg-white">
-            <div className="border-b border-ink-900/[0.08] px-3 py-2">
-              <span className="label text-ink-700">{label}</span>
-            </div>
-            <div className="h-[220px]">
-              <Editor value={value} onChange={set} onRun={() => runTests("solution")} readOnly={proofBusy} />
-            </div>
+        <div className="overflow-hidden rounded-xl border border-ink-900/15 bg-white">
+          <div className="flex flex-wrap items-end gap-1 border-b border-ink-900/[0.08] bg-ink-900/[0.03] px-2 pt-1.5">
+            {([
+              ["starter", "starter.py"],
+              ["solution", "solution.py"],
+              ["tests", `tests/${testFileName(id)}`],
+            ] as const).map(([key, label]) => (
+              <button
+                key={key}
+                onClick={() => setActiveFile(key)}
+                className={`rounded-t-lg px-3 py-1.5 font-mono text-[12px] transition-colors ${
+                  activeFile === key
+                    ? "border border-b-0 border-ink-900/15 bg-white text-ink-950"
+                    : "text-ink-600 hover:text-ink-950"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+            <span className="ml-auto hidden pb-1.5 pr-1 font-mono text-[10px] text-ink-500 md:block">
+              {activeFile === "starter" && "what the learner opens — imports cleanly, work left undone"}
+              {activeFile === "solution" && "the reference answer — never shipped to the browser"}
+              {activeFile === "tests" && "must fail on the starter, pass on the solution"}
+            </span>
           </div>
-        ))}
-        <div className="rounded-2xl bg-white p-4 ring-1 ring-ink-900/[0.08]">
-          <div className="flex flex-wrap items-center gap-2">
-            <button onClick={() => runTests("solution")} disabled={tryBusy || proofBusy} className={GOLD_BTN}>
-              {tryBusy && tryTarget === "solution" ? "Running…" : "Run tests · solution"}
+          <div className="h-[380px]">
+            {activeFile === "starter" && (
+              <Editor value={starter} onChange={setStarter} onRun={() => runFile("starter")} readOnly={proofBusy} />
+            )}
+            {activeFile === "solution" && (
+              <Editor value={solution} onChange={setSolution} onRun={() => runFile("solution")} readOnly={proofBusy} />
+            )}
+            {activeFile === "tests" && (
+              <Editor value={tests} onChange={setTests} onRun={() => runTests("solution")} readOnly={proofBusy} />
+            )}
+          </div>
+          <div className="flex flex-wrap items-center gap-2 border-t border-ink-900/[0.08] px-3 py-2.5">
+            <button
+              onClick={() => runFile(activeFile === "starter" ? "starter" : "solution")}
+              disabled={tryBusy || proofBusy}
+              className={GOLD_BTN}
+              title="Execute the file on its own and show everything it prints"
+            >
+              ▶ Run {activeFile === "starter" ? "starter.py" : "solution.py"} as a file
+            </button>
+            <button onClick={() => runTests("solution")} disabled={tryBusy || proofBusy} className={PILL}>
+              Run tests · solution
             </button>
             <button onClick={() => runTests("starter")} disabled={tryBusy || proofBusy} className={PILL}>
-              {tryBusy && tryTarget === "starter" ? "Running…" : "Run tests · starter"}
+              Run tests · starter
             </button>
             {tryBusy && (
               <>
                 <span className="text-[12px] text-ink-600">{tryState.statusMessage}</span>
-                <button
-                  onClick={() => {
-                    tryAbort.current?.abort();
-                    setTryState((s) => ({ ...s, phase: "cancelled", statusMessage: "" }));
-                  }}
-                  className={PILL}
-                >
+                <button onClick={stopTry} className={PILL}>
                   Stop
                 </button>
               </>
             )}
-            <span className="ml-auto hidden text-[11.5px] text-ink-600 sm:block">
-              ⌘/Ctrl + Enter in any editor runs against your solution
+            <span className="ml-auto hidden text-[11.5px] text-ink-600 lg:block">
+              ⌘/Ctrl + Enter runs the file you are on — on the tests tab it runs the suite
             </span>
           </div>
-          {tryState.phase !== "idle" && (
-            <div className="mt-3 overflow-hidden rounded-xl border border-ink-900/[0.08]">
-              <div className="border-b border-ink-900/[0.08] bg-ink-900/[0.03] px-3 py-1.5">
-                <span className="label text-ink-600">
-                  tests vs {tryTarget} — a scratch run while you build; the check below is what unlocks submission
-                </span>
-              </div>
-              <TestResults state={tryState} />
-            </div>
-          )}
         </div>
+        {tryState.phase !== "idle" && (
+          <div className="mt-3 overflow-hidden rounded-xl border border-ink-900/[0.08] bg-white">
+            <div className="border-b border-ink-900/[0.08] bg-ink-900/[0.03] px-3 py-1.5">
+              <span className="label text-ink-600">
+                {tryKind === "script"
+                  ? `output · ${tryTarget}.py run on its own`
+                  : `tests vs ${tryTarget} — a scratch run while you build; the check below unlocks submission`}
+              </span>
+            </div>
+            {tryKind === "script" ? (
+              tryBusy ? (
+                <div className="px-4 py-6 text-sm text-ink-700">{tryState.statusMessage || "Working…"}</div>
+              ) : tryState.crash ? (
+                <pre className="max-h-72 overflow-auto bg-ink-950 p-4 font-mono text-[11.5px] leading-5 text-rose-200 whitespace-pre-wrap">
+                  {tryState.crash.traceback || tryState.crash.message}
+                </pre>
+              ) : (
+                <pre className="max-h-72 overflow-auto bg-ink-950 p-4 font-mono text-[11.5px] leading-5 text-zinc-200 whitespace-pre-wrap">
+                  {tryState.phase === "cancelled" ? "(run stopped)" : tryState.output.trim() || "(the file ran and printed nothing)"}
+                </pre>
+              )
+            ) : (
+              <TestResults state={tryState} />
+            )}
+          </div>
+        )}
       </Section>
 
       {/* ── facets ─────────────────────────────────────────────────────── */}

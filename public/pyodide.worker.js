@@ -94,6 +94,31 @@ def _run(test_dir):
     })
 `;
 
+// Run the submission as a plain file — the author's "just run it" loop.
+const SCRIPT = String.raw`
+import io, json, sys, time, traceback, runpy
+
+def _run_script():
+    buf = io.StringIO()
+    started = time.time()
+    old_out, old_err = sys.stdout, sys.stderr
+    sys.stdout = sys.stderr = buf
+    err = None
+    try:
+        runpy.run_path("submission.py", run_name="__main__")
+    except SystemExit:
+        pass
+    except BaseException:
+        err = traceback.format_exc()
+    finally:
+        sys.stdout, sys.stderr = old_out, old_err
+    return json.dumps({
+        "output": buf.getvalue()[-20000:],
+        "error": err,
+        "durationMs": round((time.time() - started) * 1000.0, 1),
+    })
+`;
+
 // Reset + mount. Runs before every test run so an edit is actually picked up:
 // pop the submission and test_* modules, then rewrite the workspace on disk.
 const MOUNT = String.raw`
@@ -127,6 +152,7 @@ async function getPyodide() {
       await micropip.install("pytest");
       installed.add("pytest");
       py.runPython(HARNESS);
+      py.runPython(SCRIPT);
       return py;
     })();
   }
@@ -168,6 +194,27 @@ self.onmessage = async (e) => {
     post({ type: "status", phase: "booting", message: "Starting Python…" });
     const py = await getPyodide();
     await ensurePackages(py, req.packages);
+
+    if (req.mode === "script") {
+      post({ type: "status", phase: "running", message: "Running your file…" });
+      mount(py, req);
+      const parsed = JSON.parse(py.runPython("_run_script()"));
+      if (parsed.error) {
+        post({
+          type: "crash",
+          message: "The file raised an exception.",
+          traceback: (parsed.output ? parsed.output + "\n" : "") + parsed.error,
+        });
+        return;
+      }
+      post({
+        type: "result",
+        tests: [],
+        summary: { passed: 0, failed: 0, total: 0, ok: true, durationMs: parsed.durationMs },
+        output: parsed.output,
+      });
+      return;
+    }
 
     post({ type: "status", phase: "running", message: "Running tests…" });
     mount(py, req);
