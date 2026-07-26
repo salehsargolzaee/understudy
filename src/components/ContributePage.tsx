@@ -75,6 +75,19 @@ function clearDraft(videoId: string) {
   try { localStorage.removeItem(DRAFT_NS + videoId); } catch { /* ignore */ }
 }
 
+/* the fact that a PR was opened must survive a reload */
+const SUBMIT_NS = "contrib.submitted.v1:";
+interface SubmittedRecord { prUrl: string; prNumber?: number; id: string; concept: string; at: number }
+function loadSubmitted(videoId: string): SubmittedRecord | null {
+  try { return JSON.parse(localStorage.getItem(SUBMIT_NS + videoId) ?? "null"); } catch { return null; }
+}
+function saveSubmitted(videoId: string, r: SubmittedRecord) {
+  try { localStorage.setItem(SUBMIT_NS + videoId, JSON.stringify(r)); } catch { /* ignore */ }
+}
+function clearSubmitted(videoId: string) {
+  try { localStorage.removeItem(SUBMIT_NS + videoId); } catch { /* ignore */ }
+}
+
 /* ── math palette: nobody remembers matrices ─────────────────────────────── */
 const MATH_SNIPPETS: { label: string; insert: string }[] = [
   { label: "x²", insert: "x^{2}" },
@@ -426,6 +439,7 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
   }, [auth.token]);
 
   const [steps, setSteps] = useState<Steps>(freshSteps);
+  const [submitted, setSubmitted] = useState<SubmittedRecord | null>(() => loadSubmitted(videoId));
   const [prUrl, setPrUrl] = useState<string | null>(null);
   const submitting = STEP_ORDER.some((s) => steps[s].status === "doing");
   const submitFailed = STEP_ORDER.some((s) => steps[s].status === "fail");
@@ -498,12 +512,18 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
       try {
         const pr = await openPr(token, `${user.login}:${branch}`, prTitle(draft, lectureTitle), body);
         setPrUrl(pr.html_url);
+        const rec = { prUrl: pr.html_url, prNumber: pr.number, id: draft.id, concept: draft.concept, at: Date.now() };
+        saveSubmitted(videoId, rec);
+        setSubmitted(rec);
         mark("pr", "ok", `#${pr.number}`);
       } catch (e) {
         if (e instanceof GitHubError && e.status === 422 && /already exists/i.test(e.message)) {
           const existing = await findOpenPr(token, user.login, branch);
           if (!existing) throw e;
           setPrUrl(existing.html_url);
+          const rec = { prUrl: existing.html_url, prNumber: existing.number, id: draft.id, concept: draft.concept, at: Date.now() };
+          saveSubmitted(videoId, rec);
+          setSubmitted(rec);
           mark("pr", "ok", `#${existing.number} — already open; the branch was updated instead`);
         } else throw e;
       }
@@ -577,6 +597,33 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
           <p className="mt-1 text-[11.5px] text-ink-600">
             The PR check verifies the name against YouTube. If you leave this empty, the check will hand you the exact line to paste — one extra round trip.
           </p>
+        </div>
+      )}
+
+      {submitted && (
+        <div className="mt-5 rounded-2xl border border-pass/30 bg-pass/[0.06] p-4">
+          <p className="text-[13.5px] font-semibold text-pass">
+            Pull request {submitted.prNumber ? `#${submitted.prNumber} ` : ""}is open for this lecture.
+          </p>
+          <p className="mt-1 text-[13px] leading-6 text-ink-800">
+            “{submitted.concept}” was submitted{" "}
+            <a href={submitted.prUrl} target="_blank" rel="noreferrer noopener" className="text-verd underline underline-offset-2">
+              view it on GitHub ↗
+            </a>
+            . CI re-runs the checks there, then a human reviews it. Your draft below is untouched —
+            editing it and submitting again <strong>updates the same pull request</strong>, it does not
+            open a second one.
+          </p>
+          <button
+            onClick={() => {
+              clearDraft(videoId);
+              clearSubmitted(videoId);
+              location.reload();
+            }}
+            className={`${PILL} mt-2`}
+          >
+            Start a fresh exercise for this lecture
+          </button>
         </div>
       )}
 
