@@ -201,8 +201,8 @@ export default function LandingPage() {
   const heroZonesPx = desktop
     ? undefined
     : [
-        { top: 26, bottom: 160 },
-        { top: -130, bottom: -88 },
+        { top: 24, bottom: 158 },
+        { top: -116, bottom: -84 },
       ];
 
   const nextStar = lecturesWithout[0] ?? null;
@@ -239,7 +239,7 @@ export default function LandingPage() {
         <div className="relative">
         <CatalogSky
           exercises={exercises}
-          className="min-h-[64vh] sm:min-h-[560px]"
+          className="sm:min-h-[560px]"
           label={
             n
               ? `The Understudy catalog as a night sky: ${plural(n, "star")}, one for each exercise`
@@ -253,7 +253,7 @@ export default function LandingPage() {
           interactive
           scrim="radial-gradient(ellipse 80% 58% at 50% 26%, rgba(7,11,30,0.72), rgba(7,11,30,0.36) 58%, transparent 80%)"
         >
-          <div className="flex flex-col items-center px-5 pb-36 pt-52 text-center sm:pb-52 sm:pt-16">
+          <div className="flex flex-col items-center px-5 pb-32 pt-44 text-center sm:pb-52 sm:pt-16">
             <p className={`label text-zinc-300 ${SHADE}`}>Understudy</p>
             <h1 className={`mt-3 max-w-4xl font-serif text-[26px] font-semibold leading-[1.14] tracking-[-0.02em] text-white sm:text-[46px] ${SHADE}`}>
               The lectures are free on YouTube.
