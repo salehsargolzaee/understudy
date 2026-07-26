@@ -202,7 +202,7 @@ export default function LandingPage() {
     ? undefined
     : [
         { top: 24, bottom: 158 },
-        { top: -116, bottom: -84 },
+        { top: -124, bottom: -84 },
       ];
 
   const nextStar = lecturesWithout[0] ?? null;
