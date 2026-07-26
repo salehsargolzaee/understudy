@@ -22,6 +22,8 @@ import { pickRunner } from "../runner";
 import type { RunRequest, RunSummary, TestResult } from "../runner";
 import { useDebouncedEffect } from "../lib/useDebouncedEffect";
 import Star from "./Star";
+import TestResults from "./TestResults";
+import type { RunState } from "../hooks/useRun";
 import Brand from "./Brand";
 import ConceptChip from "./ConceptChip";
 import Editor from "./Editor";
@@ -283,6 +285,43 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
   const proofStale = (proof.phase === "proven" || proof.phase === "failed") && proof.key !== proofKey;
 
   useEffect(() => () => proofAbort.current?.abort(), []);
+
+  /* ── scratch runs: the author's dev loop, separate from the formal check ── */
+  const [tryState, setTryState] = useState<RunState>({
+    phase: "idle", statusMessage: "", tests: [], summary: null, output: "", crash: null, coldStart: true,
+  });
+  const [tryTarget, setTryTarget] = useState<"solution" | "starter">("solution");
+  const tryAbort = useRef<AbortController | null>(null);
+  useEffect(() => () => tryAbort.current?.abort(), []);
+  const tryBusy = tryState.phase === "booting" || tryState.phase === "installing" || tryState.phase === "running";
+
+  const runTests = useCallback(async (target: "solution" | "starter") => {
+    tryAbort.current?.abort();
+    const ctrl = new AbortController();
+    tryAbort.current = ctrl;
+    setTryTarget(target);
+    setTryState((s) => ({ ...s, phase: "booting", statusMessage: "Starting Python…", crash: null }));
+    const req: RunRequest = {
+      exerciseId: `try-${id || "exercise"}`,
+      submission: target === "solution" ? solution : starter,
+      tests: { [testFileName(id)]: tests },
+      data: {},
+      packages: splitList(packagesIn),
+    };
+    try {
+      const runner = pickRunner("pyodide");
+      let out = "";
+      for await (const ev of runner.run(req, ctrl.signal)) {
+        if (ctrl.signal.aborted) return;
+        if (ev.type === "status") setTryState((s) => ({ ...s, phase: ev.phase, statusMessage: ev.message }));
+        if (ev.type === "stdout" || ev.type === "stderr") out += ev.text;
+        if (ev.type === "result")
+          setTryState({ phase: "done", statusMessage: "", tests: ev.tests, summary: ev.summary, output: ev.output || out, crash: null, coldStart: false });
+        if (ev.type === "crash")
+          setTryState({ phase: "done", statusMessage: "", tests: [], summary: null, output: out, crash: { message: ev.message, traceback: ev.traceback }, coldStart: false });
+      }
+    } catch { /* aborted */ }
+  }, [id, solution, starter, tests, packagesIn]);
 
   const runProof = useCallback(async () => {
     proofAbort.current?.abort();
@@ -560,10 +599,47 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
               <span className="label text-ink-700">{label}</span>
             </div>
             <div className="h-[220px]">
-              <Editor value={value} onChange={set} onRun={runProof} readOnly={proofBusy} />
+              <Editor value={value} onChange={set} onRun={() => runTests("solution")} readOnly={proofBusy} />
             </div>
           </div>
         ))}
+        <div className="rounded-2xl bg-white p-4 ring-1 ring-ink-900/[0.08]">
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={() => runTests("solution")} disabled={tryBusy || proofBusy} className={GOLD_BTN}>
+              {tryBusy && tryTarget === "solution" ? "Running…" : "Run tests · solution"}
+            </button>
+            <button onClick={() => runTests("starter")} disabled={tryBusy || proofBusy} className={PILL}>
+              {tryBusy && tryTarget === "starter" ? "Running…" : "Run tests · starter"}
+            </button>
+            {tryBusy && (
+              <>
+                <span className="text-[12px] text-ink-600">{tryState.statusMessage}</span>
+                <button
+                  onClick={() => {
+                    tryAbort.current?.abort();
+                    setTryState((s) => ({ ...s, phase: "cancelled", statusMessage: "" }));
+                  }}
+                  className={PILL}
+                >
+                  Stop
+                </button>
+              </>
+            )}
+            <span className="ml-auto hidden text-[11.5px] text-ink-600 sm:block">
+              ⌘/Ctrl + Enter in any editor runs against your solution
+            </span>
+          </div>
+          {tryState.phase !== "idle" && (
+            <div className="mt-3 overflow-hidden rounded-xl border border-ink-900/[0.08]">
+              <div className="border-b border-ink-900/[0.08] bg-ink-900/[0.03] px-3 py-1.5">
+                <span className="label text-ink-600">
+                  tests vs {tryTarget} — a scratch run while you build; the check below is what unlocks submission
+                </span>
+              </div>
+              <TestResults state={tryState} />
+            </div>
+          )}
+        </div>
       </Section>
 
       {/* ── facets ─────────────────────────────────────────────────────── */}
@@ -605,7 +681,7 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
             with the code exactly as it is now.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-3">
-            <button onClick={runProof} disabled={proofBusy} className={GOLD_BTN}>
+            <button onClick={runProof} disabled={proofBusy || tryBusy} className={GOLD_BTN}>
               {proofBusy ? "Running…" : proven ? "Run again" : "Run the check"}
             </button>
             {proofBusy && (
