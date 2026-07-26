@@ -304,19 +304,20 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
   useEffect(() => () => tryAbort.current?.abort(), []);
   const tryBusy = tryState.phase === "booting" || tryState.phase === "installing" || tryState.phase === "running";
 
-  const runTests = useCallback(async (target: "solution" | "starter") => {
+  const runTests = useCallback(async (target: "solution" | "starter", packagesOverride?: string) => {
     tryAbort.current?.abort();
     const ctrl = new AbortController();
     tryAbort.current = ctrl;
     setTryKind("tests");
     setTryTarget(target);
+    lastRun.current = { kind: "tests", target };
     setTryState((s) => ({ ...s, phase: "booting", statusMessage: "Starting Python…", crash: null }));
     const req: RunRequest = {
       exerciseId: `try-${id || "exercise"}`,
       submission: target === "solution" ? solution : starter,
       tests: { [testFileName(id)]: tests },
       data: {},
-      packages: splitList(packagesIn),
+      packages: splitList(packagesOverride ?? packagesIn),
     };
     try {
       const runner = pickRunner("pyodide");
@@ -333,19 +334,20 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
     } catch { /* aborted */ }
   }, [id, solution, starter, tests, packagesIn]);
 
-  const runFile = useCallback(async (target: "starter" | "solution") => {
+  const runFile = useCallback(async (target: "starter" | "solution", packagesOverride?: string) => {
     tryAbort.current?.abort();
     const ctrl = new AbortController();
     tryAbort.current = ctrl;
     setTryKind("script");
     setTryTarget(target);
+    lastRun.current = { kind: "script", target };
     setTryState((s) => ({ ...s, phase: "booting", statusMessage: "Starting Python…", crash: null, output: "" }));
     const req: RunRequest = {
       exerciseId: `try-${id || "exercise"}`,
       submission: target === "solution" ? solution : starter,
       tests: {},
       data: {},
-      packages: splitList(packagesIn),
+      packages: splitList(packagesOverride ?? packagesIn),
       mode: "script",
     };
     try {
@@ -362,6 +364,10 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
       }
     } catch { /* aborted */ }
   }, [id, solution, starter, packagesIn]);
+
+  const missingModule = (txt?: string | null) =>
+    txt?.match(/ModuleNotFoundError: No module named '([^']+)'/)?.[1] ?? null;
+  const lastRun = useRef<{ kind: "script" | "tests"; target: "starter" | "solution" } | null>(null);
 
   const stopTry = () => {
     tryAbort.current?.abort();
@@ -777,6 +783,36 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
             ) : (
               <TestResults state={tryState} />
             )}
+            {(() => {
+              const missing = missingModule(tryState.crash?.traceback || tryState.crash?.message);
+              if (!missing || tryBusy) return null;
+              const next = splitList(packagesIn).includes(missing)
+                ? packagesIn
+                : packagesIn.trim()
+                  ? `${packagesIn.trim().replace(/,\s*$/, "")}, ${missing}`
+                  : missing;
+              return (
+                <div className="border-t border-ink-900/[0.08] bg-accent-soft/60 px-4 py-3">
+                  <p className="text-[13px] leading-6 text-ink-800">
+                    <code>{missing}</code> is not declared. This runner loads only what the exercise
+                    declares in <strong>Packages</strong> — the same list CI installs and every learner's
+                    browser downloads.
+                  </p>
+                  <button
+                    onClick={() => {
+                      setPackagesIn(next);
+                      const lr = lastRun.current;
+                      if (!lr) return;
+                      if (lr.kind === "script") void runFile(lr.target, next);
+                      else void runTests(lr.target, next);
+                    }}
+                    className={`${PILL} mt-2`}
+                  >
+                    Add “{missing}” to Packages and run again
+                  </button>
+                </div>
+              );
+            })()}
           </div>
         )}
       </Section>
@@ -841,6 +877,12 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
             <div className="mt-3 rounded-xl border border-fail/30 bg-fail/[0.06] p-3">
               <p className="text-[13px] font-medium text-fail">Not proven</p>
               <p className="mt-1 text-[12.5px] leading-5 text-ink-800">{proof.message}</p>
+              {missingModule(proof.traceback || proof.message) && (
+                <p className="mt-1 text-[12.5px] leading-5 text-ink-800">
+                  <code>{missingModule(proof.traceback || proof.message)}</code> is not declared in{" "}
+                  <strong>Packages</strong> — declare it there, then run the check again.
+                </p>
+              )}
               {proof.failing && (
                 <ul className="mt-2 space-y-1 font-mono text-[11.5px] text-ink-800">
                   {proof.failing.slice(0, 5).map((t) => <li key={t.id}>✕ {t.name}</li>)}
