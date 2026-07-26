@@ -42,6 +42,8 @@ export interface LayoutOptions {
   bottom?: number;
   /** star size multiplier; phones use smaller stars in less sky */
   scale?: number;
+  /** fewer placement candidates: irregular, cluster-prone, like a real sky */
+  natural?: boolean;
 }
 
 export interface PaintOptions {
@@ -92,7 +94,8 @@ export function layoutStars(exercises: Exercise[], w: number, h: number, opts: L
     let bestScore = -Infinity;
     let fallback: { x: number; y: number } | null = null;
 
-    for (let i = 0; i < 56; i++) {
+    const tries = opts.natural ? 8 : 56;
+    for (let i = 0; i < tries; i++) {
       const x = mx + rng() * (w - 2 * mx);
       const y = top + rng() * (bottom - top);
       if (!fallback) fallback = { x, y };

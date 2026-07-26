@@ -194,10 +194,10 @@ export default function LandingPage() {
   const lecture = showcase;
   const n = landingStats.exercises;
 
-  // desktop: stars keep out of the text column. Phone: the whole star field
-  // lives below the text, in the sky the hero reserves under it.
+  // desktop: stars keep out of the text column. Phone: the sky is overhead —
+  // the star field fills the dark above the words, the way a night sky does.
   const heroAvoid = desktop ? { x0: 0.14, y0: 0.0, x1: 0.86, y1: 0.47 } : undefined;
-  const heroBounds = desktop ? { top: 0.05, bottom: 0.68 } : { top: 0.63, bottom: 0.87 };
+  const heroBounds = desktop ? { top: 0.05, bottom: 0.68 } : { top: 0.04, bottom: 0.27 };
 
   const nextStar = lecturesWithout[0] ?? null;
 
@@ -242,12 +242,13 @@ export default function LandingPage() {
           avoid={heroAvoid}
           bounds={heroBounds}
           starScale={desktop ? 1 : 0.6}
+          natural={!desktop}
           interactive
           scrim="radial-gradient(ellipse 80% 58% at 50% 26%, rgba(7,11,30,0.72), rgba(7,11,30,0.36) 58%, transparent 80%)"
         >
-          <div className="flex flex-col items-center px-5 pb-52 pt-10 text-center sm:pb-52 sm:pt-16">
+          <div className="flex flex-col items-center px-5 pb-28 pt-44 text-center sm:pb-52 sm:pt-16">
             <p className={`label text-zinc-300 ${SHADE}`}>Understudy</p>
-            <h1 className={`mt-3 max-w-4xl font-serif text-[30px] font-semibold leading-[1.14] tracking-[-0.02em] text-white sm:text-[46px] ${SHADE}`}>
+            <h1 className={`mt-3 max-w-4xl font-serif text-[26px] font-semibold leading-[1.14] tracking-[-0.02em] text-white sm:text-[46px] ${SHADE}`}>
               The lectures are free on YouTube.
               <br />
               The practice belongs beside them.
