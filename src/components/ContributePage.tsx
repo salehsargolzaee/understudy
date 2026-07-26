@@ -293,6 +293,13 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
   const [tryTarget, setTryTarget] = useState<"solution" | "starter">("solution");
   const [tryKind, setTryKind] = useState<"tests" | "script">("tests");
   const [activeFile, setActiveFile] = useState<"starter" | "solution" | "tests">("starter");
+  const [editorLayout, setEditorLayoutState] = useState<"tabs" | "stack">(() => {
+    try { return localStorage.getItem("contrib.layout.v1") === "stack" ? "stack" : "tabs"; } catch { return "tabs"; }
+  });
+  const setEditorLayout = (l: "tabs" | "stack") => {
+    setEditorLayoutState(l);
+    try { localStorage.setItem("contrib.layout.v1", l); } catch { /* ignore */ }
+  };
   const tryAbort = useRef<AbortController | null>(null);
   useEffect(() => () => tryAbort.current?.abort(), []);
   const tryBusy = tryState.phase === "booting" || tryState.phase === "installing" || tryState.phase === "running";
@@ -627,43 +634,89 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
 
       {/* ── code ───────────────────────────────────────────────────────── */}
       <Section title="Code" hint="tests import the learner's file as `submission`">
-        <div className="overflow-hidden rounded-xl border border-ink-900/15 bg-white">
-          <div className="flex flex-wrap items-end gap-1 border-b border-ink-900/[0.08] bg-ink-900/[0.03] px-2 pt-1.5">
+        <p className="mb-4 max-w-prose text-[13px] leading-6 text-ink-700">
+          Three files make the exercise. Write <strong>solution.py</strong> first — your answer, the way
+          you would want a learner to write it — and run it as a file until it behaves. Then write{" "}
+          <strong>tests</strong> that import the learner's code as <code>submission</code>, and run them
+          against your solution until they pass. Last, copy the solution into <strong>starter.py</strong>{" "}
+          and strip the work back out, keeping every name the tests import and raising{" "}
+          <code>NotImplementedError</code> where the answer was: the tests failing on the starter and
+          passing on the solution is exactly the gap the learner crosses.
+        </p>
+        <div className="mb-2 flex items-center justify-end gap-1">
+          {(["tabs", "stack"] as const).map((l) => (
+            <button
+              key={l}
+              onClick={() => setEditorLayout(l)}
+              className={`rounded-full px-2.5 py-0.5 font-mono text-[10.5px] transition-colors ${
+                editorLayout === l ? "bg-ink-950 text-zinc-100" : "text-ink-600 hover:text-ink-950"
+              }`}
+              title={l === "tabs" ? "One editor, three tabs" : "All three files stacked"}
+            >
+              {l === "tabs" ? "tabs" : "stacked"}
+            </button>
+          ))}
+        </div>
+
+        {editorLayout === "tabs" ? (
+          <div className="overflow-hidden rounded-xl border border-ink-900/15 bg-white">
+            <div className="flex flex-wrap items-end gap-1 border-b border-ink-900/[0.08] bg-ink-900/[0.03] px-2 pt-1.5">
+              {([
+                ["starter", "starter.py"],
+                ["solution", "solution.py"],
+                ["tests", `tests/${testFileName(id)}`],
+              ] as const).map(([key, label]) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveFile(key)}
+                  className={`rounded-t-lg px-3 py-1.5 font-mono text-[12px] transition-colors ${
+                    activeFile === key
+                      ? "border border-b-0 border-ink-900/15 bg-white text-ink-950"
+                      : "text-ink-600 hover:text-ink-950"
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+              <span className="ml-auto hidden pb-1.5 pr-1 font-mono text-[10px] text-ink-500 md:block">
+                {activeFile === "starter" && "what the learner opens — imports cleanly, work left undone"}
+                {activeFile === "solution" && "the reference answer — never shipped to the browser"}
+                {activeFile === "tests" && "must fail on the starter, pass on the solution"}
+              </span>
+            </div>
+            <div className="h-[380px]">
+              {activeFile === "starter" && (
+                <Editor value={starter} onChange={setStarter} onRun={() => runFile("starter")} readOnly={proofBusy} />
+              )}
+              {activeFile === "solution" && (
+                <Editor value={solution} onChange={setSolution} onRun={() => runFile("solution")} readOnly={proofBusy} />
+              )}
+              {activeFile === "tests" && (
+                <Editor value={tests} onChange={setTests} onRun={() => runTests("solution")} readOnly={proofBusy} />
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-4">
             {([
-              ["starter", "starter.py"],
-              ["solution", "solution.py"],
-              ["tests", `tests/${testFileName(id)}`],
-            ] as const).map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => setActiveFile(key)}
-                className={`rounded-t-lg px-3 py-1.5 font-mono text-[12px] transition-colors ${
-                  activeFile === key
-                    ? "border border-b-0 border-ink-900/15 bg-white text-ink-950"
-                    : "text-ink-600 hover:text-ink-950"
-                }`}
-              >
-                {label}
-              </button>
+              ["solution.py — the reference answer; never shipped to the browser", solution, setSolution, () => runFile("solution")],
+              [`tests/${testFileName(id)} — must fail on the starter, pass on the solution`, tests, setTests, () => runTests("solution")],
+              ["starter.py — what the learner opens; imports cleanly, work left undone", starter, setStarter, () => runFile("starter")],
+            ] as const).map(([label, value, set, onRun]) => (
+              <div key={label} className="overflow-hidden rounded-xl border border-ink-900/15 bg-white">
+                <div className="border-b border-ink-900/[0.08] px-3 py-2">
+                  <span className="label text-ink-700">{label}</span>
+                </div>
+                <div className="h-[220px]">
+                  <Editor value={value} onChange={set} onRun={onRun} readOnly={proofBusy} />
+                </div>
+              </div>
             ))}
-            <span className="ml-auto hidden pb-1.5 pr-1 font-mono text-[10px] text-ink-500 md:block">
-              {activeFile === "starter" && "what the learner opens — imports cleanly, work left undone"}
-              {activeFile === "solution" && "the reference answer — never shipped to the browser"}
-              {activeFile === "tests" && "must fail on the starter, pass on the solution"}
-            </span>
           </div>
-          <div className="h-[380px]">
-            {activeFile === "starter" && (
-              <Editor value={starter} onChange={setStarter} onRun={() => runFile("starter")} readOnly={proofBusy} />
-            )}
-            {activeFile === "solution" && (
-              <Editor value={solution} onChange={setSolution} onRun={() => runFile("solution")} readOnly={proofBusy} />
-            )}
-            {activeFile === "tests" && (
-              <Editor value={tests} onChange={setTests} onRun={() => runTests("solution")} readOnly={proofBusy} />
-            )}
-          </div>
-          <div className="flex flex-wrap items-center gap-2 border-t border-ink-900/[0.08] px-3 py-2.5">
+        )}
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+          {editorLayout === "tabs" ? (
             <button
               onClick={() => runFile(activeFile === "starter" ? "starter" : "solution")}
               disabled={tryBusy || proofBusy}
@@ -672,24 +725,33 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
             >
               ▶ Run {activeFile === "starter" ? "starter.py" : "solution.py"} as a file
             </button>
-            <button onClick={() => runTests("solution")} disabled={tryBusy || proofBusy} className={PILL}>
-              Run tests · solution
-            </button>
-            <button onClick={() => runTests("starter")} disabled={tryBusy || proofBusy} className={PILL}>
-              Run tests · starter
-            </button>
-            {tryBusy && (
-              <>
-                <span className="text-[12px] text-ink-600">{tryState.statusMessage}</span>
-                <button onClick={stopTry} className={PILL}>
-                  Stop
-                </button>
-              </>
-            )}
-            <span className="ml-auto hidden text-[11.5px] text-ink-600 lg:block">
-              ⌘/Ctrl + Enter runs the file you are on — on the tests tab it runs the suite
-            </span>
-          </div>
+          ) : (
+            <>
+              <button onClick={() => runFile("solution")} disabled={tryBusy || proofBusy} className={GOLD_BTN}>
+                ▶ Run solution.py as a file
+              </button>
+              <button onClick={() => runFile("starter")} disabled={tryBusy || proofBusy} className={PILL}>
+                ▶ Run starter.py
+              </button>
+            </>
+          )}
+          <button onClick={() => runTests("solution")} disabled={tryBusy || proofBusy} className={PILL}>
+            Run tests · solution
+          </button>
+          <button onClick={() => runTests("starter")} disabled={tryBusy || proofBusy} className={PILL}>
+            Run tests · starter
+          </button>
+          {tryBusy && (
+            <>
+              <span className="text-[12px] text-ink-600">{tryState.statusMessage}</span>
+              <button onClick={stopTry} className={PILL}>
+                Stop
+              </button>
+            </>
+          )}
+          <span className="ml-auto hidden text-[11.5px] text-ink-600 lg:block">
+            ⌘/Ctrl + Enter runs the file you are in — in the tests file it runs the suite
+          </span>
         </div>
         {tryState.phase !== "idle" && (
           <div className="mt-3 overflow-hidden rounded-xl border border-ink-900/[0.08] bg-white">
@@ -806,9 +868,13 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
             ))}
           </ul>
         )}
+        <p className="mb-3 max-w-prose text-[13px] leading-6 text-ink-700">
+          These five files are generated from everything above — the folder exactly as it will appear in
+          the pull request. Open any of them to inspect it; nothing is sent until the last step.
+        </p>
         <div className="space-y-3">
           {files.map((f) => (
-            <details key={f.path} open className="overflow-hidden rounded-xl border border-ink-900/10 bg-white">
+            <details key={f.path} className="overflow-hidden rounded-xl border border-ink-900/10 bg-white">
               <summary className="flex cursor-pointer items-center gap-2 px-4 py-2.5">
                 <code className="font-mono text-[12px] text-ink-950">{f.path}</code>
                 <span className="ml-auto flex items-center gap-1.5">
