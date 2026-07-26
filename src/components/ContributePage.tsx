@@ -3,9 +3,10 @@ import { getCourse } from "../content";
 import { conceptCounts } from "../lib/catalog";
 import { getVideo, videoLabel, videos } from "../lib/videos";
 import { useOEmbedTitle } from "../lib/useOEmbedTitle";
-import { formatTimestamp, parseYouTubeRef } from "../lib/youtube";
+import { formatTimestamp, parseTimecode, parseYouTubeRef } from "../lib/youtube";
+import { useYouTubePlayer } from "../lib/useYouTubePlayer";
 import { nightRailBg } from "../lib/nightRail";
-import { contributeHash, exerciseHash, exploreHome, videoHash } from "../lib/routes";
+import { contributeHash, exerciseHash, exploreHome, videoHash, homeHash } from "../lib/routes";
 import { contributeGuideUrl, exerciseTemplateUrl, repoUrl, schemaUrl } from "../lib/contribute";
 import { authConfigured, beginLogin, signOut, useAuth } from "../lib/auth";
 import {
@@ -168,6 +169,30 @@ function LecturePicker() {
   );
 }
 
+/* ── the lecture, watchable while you write ─────────────────────────────── */
+
+function ComposerPlayer({ videoId, start, onAdopt }: { videoId: string; start: number; onAdopt: (s: number) => void }) {
+  const { hostRef, currentTime, failed } = useYouTubePlayer(videoId, start);
+  return (
+    <div className="overflow-hidden rounded-xl border border-ink-900/15 bg-ink-950">
+      <div className="aspect-video w-full">
+        <div ref={hostRef} className="h-full w-full" />
+      </div>
+      <div className="flex flex-wrap items-center gap-2 px-3 py-2">
+        <span className="font-mono text-[11px] tabular-nums text-zinc-300">{formatTimestamp(Math.floor(currentTime))}</span>
+        <button
+          onClick={() => onAdopt(Math.floor(currentTime))}
+          className="rounded-full border border-white/20 bg-white/[0.06] px-2.5 py-0.5 font-mono text-[10.5px] text-zinc-200 transition-colors hover:border-accent/60 hover:text-white"
+        >
+          Use this as start
+        </button>
+        <span className="ml-auto text-[10.5px] text-zinc-500">pause where the idea lands</span>
+        {failed && <span className="text-[10.5px] text-zinc-400">player blocked here — open the lecture page instead</span>}
+      </div>
+    </div>
+  );
+}
+
 /* ── proof / submit state ────────────────────────────────────────────────── */
 type ProofPhase = "idle" | "starter" | "solution" | "proven" | "failed";
 interface ProofState {
@@ -210,7 +235,7 @@ export default function ContributePage({ videoId, start }: { videoId: string | n
       className="relative z-30 flex h-11 shrink-0 items-center gap-2.5 bg-ink-950 px-3"
       style={{ backgroundImage: nightRailBg(), backgroundSize: "cover" }}
     >
-      <a href={exploreHome} className="flex shrink-0 items-center gap-2 pr-1" title="Explore the catalog">
+      <a href={homeHash} className="flex shrink-0 items-center gap-2 pr-1" title="understudy">
         <Brand />
       </a>
       <span className="label text-ink-500">Write an exercise</span>
@@ -254,7 +279,16 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
   const courseExists = Boolean(getCourse(courseId));
 
   const saved = useMemo(() => loadDraft(videoId), [videoId]);
-  const [startSec, setStartSec] = useState(() => saved?.start ?? Math.max(0, Math.floor(routeStart ?? 0)));
+  // the second in the URL is explicit intent (a paused player, a tapped moment):
+  // it beats whatever second a saved draft remembers
+  const initialStart = routeStart != null ? Math.max(0, Math.floor(routeStart)) : saved?.start ?? 0;
+  const [startSec, setStartSecState] = useState(initialStart);
+  // authors think in 31:00 or 1:02:40, not seconds — the field accepts both
+  const [startText, setStartText] = useState(() => formatTimestamp(initialStart));
+  const setStartSec = (s: number) => {
+    setStartSecState(s);
+    setStartText(formatTimestamp(s));
+  };
   const [concept, setConcept] = useState(saved?.concept ?? "");
   const [titleOverride, setTitleOverride] = useState(saved?.titleOverride ?? "");
   const [brief, setBrief] = useState(saved?.brief ?? DEFAULT_BRIEF);
@@ -267,6 +301,7 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
   const [level, setLevel] = useState(saved?.level ?? "");
   const [notes, setNotes] = useState(saved?.notes ?? "");
   const [human, setHuman] = useState<HumanChecks>({ timestamp: false, brief: false, tests: false, solution: false });
+  const [watchOpen, setWatchOpen] = useState(false);
 
   useDebouncedEffect(() => {
     saveDraft(videoId, { start: startSec, concept, titleOverride, brief, starter, solution, tests, conceptsIn, tagsIn, packagesIn, level, notes });
@@ -576,12 +611,19 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
           <label className="flex items-center gap-2 rounded-full border border-ink-900/15 bg-white px-3 py-1 font-mono text-[11px] text-ink-900">
             start
             <input
-              type="number" min={0} value={startSec}
-              onChange={(e) => setStartSec(Math.max(0, Math.floor(Number(e.target.value) || 0)))}
+              type="text"
+              value={startText}
+              onChange={(e) => {
+                setStartText(e.target.value);
+                const parsed = parseTimecode(e.target.value);
+                if (parsed != null) setStartSecState(Math.max(0, parsed));
+              }}
+              onBlur={() => setStartText(formatTimestamp(startSec))}
+              placeholder="31:00"
               className="w-20 bg-transparent text-right tabular-nums focus:outline-none"
-              aria-label="Timestamp in seconds"
+              aria-label="Timestamp — minutes and seconds, hours if you need them, or plain seconds"
             />
-            s · {formatTimestamp(startSec)}
+            · {startSec}s
           </label>
           <span className="font-mono text-[11px] text-ink-600">
             video <code>{videoId}</code> · course{" "}
@@ -589,6 +631,20 @@ function Authoring({ videoId, routeStart }: { videoId: string; routeStart: numbe
           </span>
         </div>
       </div>
+      <details
+        className="mt-4 max-w-2xl"
+        onToggle={(e) => setWatchOpen((e.target as HTMLDetailsElement).open)}
+      >
+        <summary className="cursor-pointer select-none text-[13px] font-medium text-verd underline decoration-dotted underline-offset-4">
+          Watch the lecture here while you write
+        </summary>
+        {watchOpen && (
+          <div className="mt-3">
+            <ComposerPlayer videoId={videoId} start={startSec} onAdopt={setStartSec} />
+          </div>
+        )}
+      </details>
+
       {!video.title && !fetchedTitle && (
         <div className="mt-3 max-w-xl">
           <label className="label block text-ink-700">Lecture title — we could not fetch it from here</label>

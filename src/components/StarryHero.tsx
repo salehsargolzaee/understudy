@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { makeRng } from "../lib/rng";
 
 /**
  * The contributor's night sky, painted in impasto: thousands of short, thick,
@@ -7,18 +8,6 @@ import { useEffect, useRef } from "react";
  * the handle, so every contributor owns a different painting, stable over time.
  * Painted once to an in-flow <canvas>; the bottom dissolves into the paper.
  */
-function makeRng(seed: string) {
-  let h = 1779033703 ^ seed.length;
-  for (let i = 0; i < seed.length; i++) {
-    h = Math.imul(h ^ seed.charCodeAt(i), 3432918353);
-    h = (h << 13) | (h >>> 19);
-  }
-  return () => {
-    h = Math.imul(h ^ (h >>> 16), 2246822507);
-    h = Math.imul(h ^ (h >>> 13), 3266489909);
-    return ((h ^= h >>> 16) >>> 0) / 4294967296;
-  };
-}
 
 // Starry-night pigments, dark base to pale highlight, plus golds for the stars.
 const BASE = ["#101f45", "#16295b", "#1d3568", "#24417c", "#2c4e91"];

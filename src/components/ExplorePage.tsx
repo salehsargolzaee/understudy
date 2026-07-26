@@ -28,6 +28,7 @@ import {
   searchHash,
   videoHash,
   viewHash,
+  homeHash,
 } from "../lib/routes";
 import type { ExploreView } from "../lib/routes";
 import { searchCatalog } from "../lib/search";
@@ -35,7 +36,8 @@ import Star from "./Star";
 import Avatar from "./Avatar";
 import Brand from "./Brand";
 import ConceptChip from "./ConceptChip";
-import StarryHero from "./StarryHero";
+import CatalogSky from "./CatalogSky";
+import Horizon from "./Horizon";
 import { contributeHash } from "../lib/routes";
 import VideoThumb from "./VideoThumb";
 
@@ -725,10 +727,12 @@ export default function ExplorePage({ view, workspaceHref }: { view: ExploreView
         className="relative z-30 flex h-11 shrink-0 items-center gap-2.5 bg-ink-950 px-3"
         style={{ backgroundImage: nightRailBg(), backgroundSize: "cover" }}
       >
-        <a href={exploreHome} className="flex shrink-0 items-center gap-2 pr-1" title="Explore home">
+        <a href={homeHash} className="flex shrink-0 items-center gap-2 pr-1" title="understudy">
           <Brand />
         </a>
-        <span className="label text-ink-500">Explore</span>
+        <a href={exploreHome} className="label rounded px-1 py-0.5 text-ink-500 transition-colors hover:text-zinc-300">
+          Explore
+        </a>
         <div className="ml-auto flex shrink-0 items-center gap-1">
           <a
             href={contributeHash()}
@@ -756,7 +760,16 @@ export default function ExplorePage({ view, workspaceHref }: { view: ExploreView
           <>
             {/* the catalog's own night sky; the search floats where it meets the paper */}
             <div className="relative">
-              <StarryHero handle="understudy · explore" label="The understudy catalog, painted as a night sky" />
+              <CatalogSky
+                exercises={exercises}
+                seed="understudy · explore"
+                className="min-h-[280px] sm:min-h-[340px]"
+                label="The Understudy catalog, painted as a night sky: one star per exercise"
+                bounds={{ top: 0.06, bottom: 0.82 }}
+                avoid={{ x0: 0.16, y0: 0.1, x1: 0.84, y1: 1.0 }}
+                interactive
+              />
+              <Horizon className="h-[44px] sm:h-[56px]" />
               {/* a feathered pool of night under the words — the painting keeps
                   its edges, the text gets a quiet patch of sky to sit on */}
               <div
@@ -767,7 +780,7 @@ export default function ExplorePage({ view, workspaceHref }: { view: ExploreView
                     "radial-gradient(ellipse 78% 68% at 50% 32%, rgba(10,14,30,0.66), rgba(10,14,30,0.32) 55%, transparent 78%)",
                 }}
               />
-              <div className="absolute inset-0 flex flex-col items-center justify-start px-5 pt-8 text-center sm:pt-12">
+              <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-start px-5 pt-8 text-center sm:pt-12">
                 <h1 className="font-serif text-[30px] font-semibold leading-tight tracking-[-0.015em] text-white [text-shadow:0_2px_18px_rgba(13,19,48,0.9)] sm:text-[40px]">
                   Practice what you watch.
                 </h1>
@@ -777,7 +790,7 @@ export default function ExplorePage({ view, workspaceHref }: { view: ExploreView
                   {catalogStats.courses} course{catalogStats.courses === 1 ? "" : "s"} ·{" "}
                   {catalogStats.contributors} contributor{catalogStats.contributors === 1 ? "" : "s"}
                 </p>
-                <div className="mt-6 w-full max-w-xl sm:mt-8">
+                <div className="pointer-events-auto mt-6 w-full max-w-xl sm:mt-8">
                   <SearchBox value={q} onChange={onQuery} large />
                 </div>
                 <p className="mt-2 font-mono text-[10px] text-zinc-300 [text-shadow:0_1px_10px_rgba(13,19,48,0.9)]">

@@ -6,6 +6,9 @@ export type ExploreView =
   | { type: "field"; name: string }
   | { type: "level"; name: string };
 
+/** The landing page: the empty hash, and the fallback for anything unrecognised. */
+export const homeHash = "#/";
+
 export const exerciseHash = (id: string) => `#/e/${encodeURIComponent(id)}`;
 export const exploreHome = "#/x";
 export const searchHash = (q: string) => `#/x/q/${encodeURIComponent(q)}`;

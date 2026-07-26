@@ -5,12 +5,13 @@ import { getContributor } from "../lib/contributors";
 import type { ContributorProfile, CourseContribution } from "../lib/contributors";
 import { githubUrl } from "../lib/github";
 import { nightRailBg } from "../lib/nightRail";
-import { courseHash, exerciseHash, exploreHome, searchHash } from "../lib/routes";
+import { courseHash, exerciseHash, exploreHome, searchHash, homeHash } from "../lib/routes";
 import Star from "./Star";
 import Avatar from "./Avatar";
 import Brand from "./Brand";
 import ConceptChip from "./ConceptChip";
-import StarryHero from "./StarryHero";
+import CatalogSky from "./CatalogSky";
+import Horizon from "./Horizon";
 /**
  * Contributor profile: the public record of what a handle has authored.
  * Contribution only — nothing here reads completion or practice data.
@@ -178,8 +179,19 @@ function ProfileBody({ profile }: { profile: ContributorProfile }) {
   ];
   return (
     <div>
-      {/* The contributor's work as a night sky, dissolving into the site's canvas */}
-      <StarryHero handle={profile.handle} />
+      {/* The contributor's work as a night sky, literally: one clickable star
+          per exercise they wrote, over a nebula seeded by their handle */}
+      <div className="relative">
+        <CatalogSky
+          exercises={profile.exercises}
+          seed={profile.handle}
+          className="min-h-[280px] sm:min-h-[340px]"
+          label={`@${profile.handle}'s exercises as a night sky`}
+          bounds={{ top: 0.08, bottom: 0.62 }}
+          interactive
+        />
+        <Horizon className="h-[52px] sm:h-[68px]" />
+      </div>
       <div className="mx-auto max-w-3xl px-5 pb-16 sm:px-8">
         {/* identity emerges where the night meets the paper */}
         <header className="relative -mt-24 sm:-mt-28">
@@ -313,7 +325,7 @@ export default function ProfilePage({ handle, backHref }: { handle: string; back
         className="flex h-11 shrink-0 items-center gap-2.5 bg-ink-950 px-3"
         style={{ backgroundImage: nightRailBg(), backgroundSize: "cover" }}
       >
-        <a href={exploreHome} className="flex shrink-0 items-center gap-2 pr-1" title="Explore the catalog">
+        <a href={homeHash} className="flex shrink-0 items-center gap-2 pr-1" title="understudy">
           <Brand />
         </a>
         <span className="label text-ink-600">Contributor profile</span>

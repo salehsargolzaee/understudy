@@ -14,3 +14,7 @@ export const contributeGuideUrl = blob("CONTRIBUTING.md");
 export const exerciseTemplateUrl = tree("templates/exercise");
 export const schemaUrl = blob("content/SCHEMA.md");
 export const reviewRubricUrl = blob("docs/REVIEWING.md");
+// The landing page points strangers at the machinery itself, not at a description of it.
+export const checkerUrl = blob("tools/validate_exercises.py");
+export const workflowUrl = blob(".github/workflows/content.yml");
+export const prTemplateUrl = blob(".github/PULL_REQUEST_TEMPLATE.md");

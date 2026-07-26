@@ -5,7 +5,7 @@ import type { LectureVideo, VideoMoment } from "../lib/videos";
 import { tallyAuthors, tallyConcepts } from "../lib/catalog";
 import { loadPassed } from "../lib/storage";
 import { nightRailBg } from "../lib/nightRail";
-import { contributeHash, courseHash, exerciseHash, exploreHome, videoHash } from "../lib/routes";
+import { contributeHash, courseHash, exerciseHash, exploreHome, videoHash, homeHash } from "../lib/routes";
 import { formatTimestamp, youtubeUrl } from "../lib/youtube";
 import { useYouTubePlayer } from "../lib/useYouTubePlayer";
 import { useOEmbedTitle } from "../lib/useOEmbedTitle";
@@ -368,7 +368,7 @@ export default function VideoPage({
         className="relative z-30 flex h-11 shrink-0 items-center gap-2.5 bg-ink-950 px-3"
         style={{ backgroundImage: nightRailBg(), backgroundSize: "cover" }}
       >
-        <a href={exploreHome} className="flex shrink-0 items-center gap-2 pr-1" title="Explore the catalog">
+        <a href={homeHash} className="flex shrink-0 items-center gap-2 pr-1" title="understudy">
           <Brand />
         </a>
         <span className="label truncate text-ink-500">Lecture</span>

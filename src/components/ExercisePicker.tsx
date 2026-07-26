@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import type { Exercise } from "../content";
 import { nightRailBg } from "../lib/nightRail";
-import { exploreHome } from "../lib/routes";
+import { exploreHome, homeHash } from "../lib/routes";
 import Star from "./Star";
 import Brand from "./Brand";
 interface Props {
@@ -37,7 +37,7 @@ export default function ExercisePicker({ exercises, currentId, passed, onSelect 
       className="relative z-30 flex h-11 shrink-0 items-center gap-2.5 bg-ink-950 px-3"
       style={{ backgroundImage: nightRailBg(), backgroundSize: "cover" }}
     >
-      <a href={exploreHome} className="flex shrink-0 items-center gap-2 pr-1" title="Explore the catalog">
+      <a href={homeHash} className="flex shrink-0 items-center gap-2 pr-1" title="understudy">
         <Brand />
       </a>
       <a

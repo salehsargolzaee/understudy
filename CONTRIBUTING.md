@@ -1,6 +1,6 @@
 # Contributing an exercise
 
-understudy turns lectures into practice. A lecture explains something; an
+Understudy turns lectures into practice. A lecture explains something; an
 exercise asks you to write it, at the minute it was explained, and checks your
 answer in the browser.
 

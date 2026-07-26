@@ -10,6 +10,7 @@ import ExerciseWorkspace from "./ExerciseWorkspace";
 import ExplorePage from "./ExplorePage";
 import ProfilePage from "./ProfilePage";
 import VideoPage from "./VideoPage";
+import LandingPage from "./LandingPage";
 import ContributePage from "./ContributePage";
 import { completeOAuth } from "../lib/auth";
 
@@ -19,6 +20,7 @@ import { completeOAuth } from "../lib/auth";
  * exercise workspace (#/e/<id>), and a contributor profile (#/u/<handle>).
  */
 type Route =
+  | { kind: "landing" }
   | { kind: "explore"; view: ExploreView }
   | { kind: "video"; id: string; start: number | null }
   | { kind: "exercise"; id: string }
@@ -27,6 +29,7 @@ type Route =
 
 const parseHash = (): Route => {
   const h = location.hash;
+  if (!h || h === "#" || h === "#/") return { kind: "landing" };
   if (h.startsWith("#/u/")) return { kind: "profile", handle: safeDecode(h.slice(4)) };
   if (h.startsWith("#/e/")) return { kind: "exercise", id: safeDecode(h.slice(4)) };
   if (h.startsWith("#/new")) {
@@ -38,7 +41,7 @@ const parseHash = (): Route => {
     if (v) return { kind: "video", id: v.id, start: v.start };
   }
   if (h.startsWith("#/x")) return { kind: "explore", view: parseExplore(h.slice(3)) };
-  return { kind: "explore", view: { type: "home" } };
+  return { kind: "landing" };
 };
 
 export default function App() {
@@ -69,12 +72,16 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    warmPyodide();
-  }, []);
+    // A first-time visitor must not pay for a ~10 MB Python runtime they did
+    // not ask for: the landing page warms the runner only on intent.
+    if (route.kind !== "landing") warmPyodide();
+  }, [route.kind]);
 
   useEffect(() => {
     void completeOAuth(); // finishes a GitHub sign-in redirect, if one is pending
   }, []);
+
+  if (route.kind === "landing") return <LandingPage />;
 
   // A pasted link has to work even before any content exists, so the lecture
   // route is checked before the empty-catalog guard.

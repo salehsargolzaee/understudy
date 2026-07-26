@@ -105,3 +105,24 @@ body[data-dragging] { user-select: none; }
   from { opacity: 0; transform: translateY(14px); }
   to { opacity: 1; transform: none; }
 }
+
+/* the hero stars breathe, gently and out of phase. Still under reduced motion. */
+.star-breathe {
+  opacity: 0.25;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .star-breathe {
+    animation: star-breathe 4.2s ease-in-out infinite;
+  }
+  @keyframes star-breathe {
+    0%,
+    100% {
+      opacity: 0.2;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.75;
+      transform: scale(1.3);
+    }
+  }
+}
