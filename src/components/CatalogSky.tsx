@@ -24,6 +24,7 @@ interface Props {
   label: string;
   avoid?: Rect;
   bounds?: { top?: number; bottom?: number };
+  starScale?: number;
   fade?: boolean;
   dim?: number;
   interactive?: boolean;
@@ -85,6 +86,7 @@ export default function CatalogSky({
   label,
   avoid,
   bounds,
+  starScale,
   fade = false,
   dim = 0,
   interactive = false,
@@ -134,9 +136,9 @@ export default function CatalogSky({
 
   const avoidKey = avoid ? `${avoid.x0},${avoid.y0},${avoid.x1},${avoid.y1}` : "";
   const stars = useMemo(
-    () => (box.w ? layoutStars(exercises, box.w, box.h, { avoid, ...bounds }) : []),
+    () => (box.w ? layoutStars(exercises, box.w, box.h, { avoid, scale: starScale, ...bounds }) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [exercises, box.w, box.h, avoidKey, bounds?.top, bounds?.bottom],
+    [exercises, box.w, box.h, avoidKey, bounds?.top, bounds?.bottom, starScale],
   );
 
   useEffect(() => {

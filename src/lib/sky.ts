@@ -40,6 +40,8 @@ export interface LayoutOptions {
   /** fractional bounds; the default bottom clears the fade into paper */
   top?: number;
   bottom?: number;
+  /** star size multiplier; phones use smaller stars in less sky */
+  scale?: number;
 }
 
 export interface PaintOptions {
@@ -72,7 +74,7 @@ const starRadius = (w: number, h: number) => clamp(Math.min(w, h) * 0.032, 9, 24
 export function layoutStars(exercises: Exercise[], w: number, h: number, opts: LayoutOptions = {}): SkyStar[] {
   if (!exercises.length || w < 60 || h < 60) return [];
 
-  const R = starRadius(w, h);
+  const R = starRadius(w, h) * (opts.scale ?? 1);
   const mx = Math.min(R * 1.8, w * 0.12);
   const top = (opts.top ?? 0.06) * h;
   const bottom = (opts.bottom ?? 0.72) * h;

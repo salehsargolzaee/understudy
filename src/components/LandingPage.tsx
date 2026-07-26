@@ -197,7 +197,7 @@ export default function LandingPage() {
   // desktop: stars keep out of the text column. Phone: the whole star field
   // lives below the text, in the sky the hero reserves under it.
   const heroAvoid = desktop ? { x0: 0.14, y0: 0.0, x1: 0.86, y1: 0.47 } : undefined;
-  const heroBounds = desktop ? { top: 0.05, bottom: 0.68 } : { top: 0.55, bottom: 0.87 };
+  const heroBounds = desktop ? { top: 0.05, bottom: 0.68 } : { top: 0.63, bottom: 0.87 };
 
   const nextStar = lecturesWithout[0] ?? null;
 
@@ -241,17 +241,18 @@ export default function LandingPage() {
           }
           avoid={heroAvoid}
           bounds={heroBounds}
+          starScale={desktop ? 1 : 0.6}
           interactive
           scrim="radial-gradient(ellipse 80% 58% at 50% 26%, rgba(7,11,30,0.72), rgba(7,11,30,0.36) 58%, transparent 80%)"
         >
-          <div className="flex flex-col items-center px-5 pb-72 pt-10 text-center sm:pb-52 sm:pt-16">
+          <div className="flex flex-col items-center px-5 pb-52 pt-10 text-center sm:pb-52 sm:pt-16">
             <p className={`label text-zinc-300 ${SHADE}`}>Understudy</p>
             <h1 className={`mt-3 max-w-4xl font-serif text-[30px] font-semibold leading-[1.14] tracking-[-0.02em] text-white sm:text-[46px] ${SHADE}`}>
               The lectures are free on YouTube.
               <br />
               The practice belongs beside them.
             </h1>
-            <p className="mt-4 max-w-xl font-mono text-[11px] leading-5 text-zinc-100 [text-shadow:0_1px_6px_rgba(7,11,30,1),0_2px_26px_rgba(7,11,30,0.95)] sm:text-[12.5px]">
+            <p className="mt-4 max-w-xl font-mono text-[11px] leading-5 text-zinc-100 [text-shadow:0_1px_6px_rgba(7,11,30,1),0_2px_26px_rgba(7,11,30,0.95)] max-sm:rounded-2xl max-sm:bg-[rgba(7,11,30,0.45)] max-sm:px-4 max-sm:py-3 max-sm:backdrop-blur-[2px] sm:text-[12.5px]">
               the best universities and teachers give whole courses away. The practice is ours to
               build: real exercises beside the lecture, at the minute each idea is taught, by whoever
               just learned it.
