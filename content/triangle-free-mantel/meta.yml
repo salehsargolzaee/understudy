@@ -1,0 +1,12 @@
+id: triangle-free-mantel
+author: ebrahimpichka
+course: waterloo-co642
+video_id: _YPwH3c7OOE
+video_title: "Graph Theory 9-1: Turan's Theorem"
+start: 141
+concept: "Mantel's theorem: the most edges without a triangle"
+concepts: [extremal-graph-theory, graph-coloring]
+tags: [graphs, python]
+runtime: pyodide
+packages: []
+level: graduate
