@@ -1,0 +1,53 @@
+id: stanford-cs364a
+name: "Algorithmic Game Theory (Stanford CS364A)"
+institution: "Stanford University"
+creator: "Tim Roughgarden"
+platform: youtube
+playlist_url: "https://www.youtube.com/playlist?list=PLEGCF-WLh2RJBqmxvZ0_ie-mleCFhi2N4"
+playlist_id: "PLEGCF-WLh2RJBqmxvZ0_ie-mleCFhi2N4"
+field: "CS / Game Theory"
+level: graduate
+# Ordered table of contents, taken verbatim from the course playlist. A lecture
+# may be listed before anybody has written practice for it — that is the normal
+# state of a course being filled in.
+lectures:
+  - id: TM_QFmQU_VA
+    title: "Algorithmic Game Theory (Lecture 1: Introduction and Examples)"
+  - id: z1QZqYuiGa8
+    title: "Algorithmic Game Theory (Lecture 2: Mechanism Design Basics)"
+  - id: 9qZwchMuslk
+    title: "Algorithmic Game Theory (Lecture 3: Myerson's Lemma)"
+  - id: BMoSLmuJsak
+    title: "Algorithmic Game Theory (Lecture 4: Algorithmic Mechanism Design)"
+  - id: jQsAoMcxlIo
+    title: "Algorithmic Game Theory (Lecture 5: Revenue-Maximizing Auctions)"
+  - id: DkZswYeJLRE
+    title: "Algorithmic Game Theory (Lecture 6: Simple Near-Optimal Auctions)"
+  - id: TLl3FVXPVIY
+    title: "Algorithmic Game Theory (Lecture 7: Multi-Parameter Mechanism Design and the VCG Mechanism)"
+  - id: TttPqjl991A
+    title: "Algorithmic Game Theory (Lecture 8: Combinatorial and Wireless Spectrum Auctions)"
+  - id: zV6yH3-AdEg
+    title: "Algorithmic Game Theory (Lecture 9: Beyond Quasi-Linearity)"
+  - id: NT07sILhsv4
+    title: "Algorithmic Game Theory (Lecture 10: Kidney Exchange and Stable Matching)"
+  - id: jnLEEr3pc4Y
+    title: "Algorithmic Game Theory (Lecture 11: Selfish Routing and the Price of Anarchy)"
+  - id: JUc5BbotCVA
+    title: "Algorithmic Game Theory (Lecture 12: Network Over-Provisioning and Atomic Selfish Routing)"
+  - id: aV16MDoRZoc
+    title: "Algorithmic Game Theory (Lecture 13: Potential Games; A Hierarchy of Equilibria)"
+  - id: eYd7VxtITrE
+    title: "Algorithmic Game Theory (Lecture 14: Robust Price-of-Anarchy Bounds in Smooth Games)"
+  - id: VjCKNl-GENI
+    title: "Algorithmic Game Theory (Lecture 15: Best-Case and Strong Nash Equilibria)"
+  - id: QOCmIDzOcJA
+    title: "Algorithmic Game Theory (Lecture 16: Best-Response Dynamics)"
+  - id: ssAEgJKRe9o
+    title: "Algorithmic Game Theory (Lecture 17: No-Regret Dynamics)"
+  - id: XQ32p6clz9k
+    title: "Algorithmic Game Theory (Lecture 18: From External Regret to Swap Regret and the Minimax Theorem)"
+  - id: 5xu8C0wj7UU
+    title: "Algorithmic Game Theory (Lecture 19: Pure Nash Equilibria and PLS-Completeness)"
+  - id: P8adJn_KQO0
+    title: "Algorithmic Game Theory (Lecture 20: Mixed Nash Equilibria and PPAD-Completeness)"
