@@ -14,8 +14,10 @@ Writing $n = qr + s$ with $0 \le s < r$, the parts are $s$ of size $q+1$ and
 $r - s$ of size $q$. Counting edges is then a complement argument — every pair
 is an edge *except* the pairs sitting inside a part:
 
-$$e(T(n,r)) = \binom{n}{2} - \sum_{i=1}^{r} \binom{n_i}{2}
-            = \frac{n^2 - \sum_i n_i^2}{2}$$
+$$
+e(T(n,r)) = \binom{n}{2} - \sum_{i=1}^{r} \binom{n_i}{2}
+          = \frac{n^2 - \sum_i n_i^2}{2}
+$$
 
 ## What to implement
 
