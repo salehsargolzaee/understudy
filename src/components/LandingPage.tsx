@@ -4,7 +4,7 @@ import { exercises } from "../content";
 import type { LectureVideo } from "../lib/videos";
 import { videoLabel } from "../lib/videos";
 import { contributorCounts } from "../lib/catalog";
-import { courseNames, featured, featuredVideo, gentle, landingStats, lecturesWithout, showcase } from "../lib/landing";
+import { featured, featuredVideo, gentle, landingStats, lecturesWithout, showcase } from "../lib/landing";
 import { formatTimestamp } from "../lib/youtube";
 import { nightRailBg } from "../lib/nightRail";
 import { contributeHash, exerciseHash, exploreHome, homeHash, videoHash } from "../lib/routes";
@@ -43,8 +43,6 @@ const PILL =
 const SHADE = "[text-shadow:0_2px_22px_rgba(7,11,30,0.92)]";
 
 const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? "" : "s"}`;
-const nameList = (xs: string[]) =>
-  xs.length <= 1 ? xs[0] ?? "" : `${xs.slice(0, -1).join(", ")} and ${xs[xs.length - 1]}`;
 
 const Rule = () => (
   <div aria-hidden className="mt-3 h-[3px] w-16 rounded-full" style={{ background: "linear-gradient(90deg, #26418f, #c39422)" }} />
@@ -316,8 +314,8 @@ export default function LandingPage() {
           <Rule />
           <div className="mt-6 max-w-[62ch] space-y-5 text-[15.5px] leading-[1.75] text-ink-800">
             <p>
-              The courses in this catalog — {nameList(courseNames)} — sit on YouTube in full, free, taught by the
-              people who teach them best. You can watch every minute of them tonight. What no video can do is ask
+              The {landingStats.courses} courses in this catalog sit on YouTube in full, free, from top
+              universities and teachers. You can watch every minute of them tonight. What no video can do is ask
               you to try the thing it just explained, and check whether you actually can.
             </p>
             <p>
