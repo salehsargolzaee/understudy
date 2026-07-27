@@ -315,7 +315,7 @@ export default function LandingPage() {
           <div className="mt-6 max-w-[62ch] space-y-5 text-[15.5px] leading-[1.75] text-ink-800">
             <p>
               The {landingStats.courses} courses in this catalog sit on YouTube in full, free, from top
-              universities and teachers. You can watch every minute of them tonight. What no video can do is ask
+              universities and teachers. You could start any of them tonight. What no video can do is ask
               you to try the thing it just explained, and check whether you actually can.
             </p>
             <p>
