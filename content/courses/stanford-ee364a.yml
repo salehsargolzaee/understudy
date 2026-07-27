@@ -1,0 +1,49 @@
+id: stanford-ee364a
+name: "Convex Optimization I (Stanford EE364A)"
+institution: "Stanford University"
+creator: "Stephen Boyd"
+platform: youtube
+playlist_url: "https://www.youtube.com/playlist?list=PLoROMvodv4rMJqxxviPa4AmDClvcbHi6h"
+playlist_id: "PLoROMvodv4rMJqxxviPa4AmDClvcbHi6h"
+field: "Math / Optimization"
+level: graduate
+# Ordered table of contents, taken verbatim from the course playlist. A lecture
+# may be listed before anybody has written practice for it — that is the normal
+# state of a course being filled in.
+lectures:
+  - id: kV1ru-Inzl4
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 1"
+  - id: 2H4_7izio9Y
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 2"
+  - id: 1menqhfNzzo
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 3"
+  - id: U2HRwA7XePU
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 4"
+  - id: AAjG1TQcL7c
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 5"
+  - id: d2jF3SXcFQ8
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 6"
+  - id: P_SuSVZnrT0
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 7"
+  - id: wsRznzNgTS0
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 8"
+  - id: whE03c84ahA
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 9"
+  - id: N3V2AdTImJE
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 10"
+  - id: trs0RI39uWI
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 11"
+  - id: t8sp9rv-Dqo
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 12"
+  - id: ankx1lGi5jI
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 13"
+  - id: dAvxvA4_Euo
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 14"
+  - id: zVO4ccvrwrI
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 15"
+  - id: Sx7TKDFJjmk
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 16"
+  - id: vcTIA2X0UVk
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 17"
+  - id: 4A5opemjRW4
+    title: "Stanford EE364A Convex Optimization I Stephen Boyd I 2023 I Lecture 18"
