@@ -1,0 +1,47 @@
+id: cornell-cs6785
+name: "Deep Generative Models (Cornell CS 6785)"
+institution: "Cornell Tech"
+creator: "Volodymyr Kuleshov"
+platform: youtube
+playlist_url: "https://www.youtube.com/playlist?list=PL2UML_KCiC0UPzjW9BjO-IW6dqliu9O4B"
+playlist_id: "PL2UML_KCiC0UPzjW9BjO-IW6dqliu9O4B"
+field: "Deep Learning"
+level: graduate
+# Ordered table of contents, taken verbatim from the course playlist. A lecture
+# may be listed before anybody has written practice for it — that is the normal
+# state of a course being filled in.
+lectures:
+  - id: IZgvgLy1wyg
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 1: Course Introduction"
+  - id: FBGj_B6hH9Y
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 2: Introduction to Probabilistic Modeling"
+  - id: Y3cJFaM8w2w
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 3: Autoregressive Models"
+  - id: -OjBWNmXYyg
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 4: Maximum Likelihood Learning"
+  - id: KQOQyrkU8rk
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 5: Latent Variable Models"
+  - id: v86nlzoYrYI
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 6: Learning Latent Variable Models"
+  - id: 3IqRV40LKPs
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 7: Normalizing Flows"
+  - id: IEx8ZgeN8kQ
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 8: Advanced Flow Models"
+  - id: -3fzhDufRDc
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 9: Generative Adversarial Networks"
+  - id: Ml15crPldBk
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 10: Advanced Topics in GANs"
+  - id: W0rCcPKF4Yc
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 11: Energy-Based Models"
+  - id: jW48tmRwv4U
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 12: Score-Based Generative Models"
+  - id: yUnIzzNiyho
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 13: Diffusion Models"
+  - id: hD2cakJLKpg
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 14: Evaluating Generative Models"
+  - id: gwUN1vCt0oU
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 15: Combining Generative Model Families"
+  - id: akj-5TetUjk
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 16: Discrete Deep Generative Models"
+  - id: AmycLF6hCvU
+    title: "Cornell CS 6785: Deep Generative Models. Lecture 17: Probabilistic Reasoning"
