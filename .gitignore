@@ -13,3 +13,8 @@ content/demo-*
 validation-report.json
 .vercel
 .env*
+
+# Python bytecode, from running the checker or pytest inside content/
+__pycache__/
+*.py[cod]
+.pytest_cache/
