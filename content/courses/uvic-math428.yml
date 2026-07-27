@@ -1,0 +1,59 @@
+id: uvic-math428
+name: "Discrete Optimization (UVic Math 428/529)"
+institution: "University of Victoria"
+creator: "Jonathan Noel"
+platform: youtube
+playlist_url: "https://www.youtube.com/playlist?list=PLtxJg53s2o0MAC2sfZDuhKYAHgj_NrGVv"
+playlist_id: "PLtxJg53s2o0MAC2sfZDuhKYAHgj_NrGVv"
+field: "Math / Optimization"
+level: undergraduate
+# Ordered table of contents, taken verbatim from the course playlist. A lecture
+# may be listed before anybody has written practice for it — that is the normal
+# state of a course being filled in.
+lectures:
+  - id: GHgMEx2JtQE
+    title: "Discrete Optimization Lecture 1: Introduction, algorithms, Big O, Shortest Path"
+  - id: P-45xvxnfXY
+    title: "Discrete Optimization Lecture 2: Decision Problems, Complexity classes. Philosophy of Duality"
+  - id: jRVfhe_T-0g
+    title: "Discrete Optimization Lecture 3: Reductions, hardness, NP-completeness, SAT, 3-SAT, undecidability"
+  - id: 1VRVmCqGMYI
+    title: "Discrete Optimization Lecture 4: Introduction to Linear Programming"
+  - id: L1G8NvBq15U
+    title: "Discrete Optimization Lecture 5: Linear Programming Basics and Weak Duality"
+  - id: svfRtKeFe94
+    title: "Discrete Optimization Lecture 6: Strong Duality for Linear Programming"
+  - id: FP2UPul1CI4
+    title: "Discrete Optimization Lecture 7: Introduction to Matchings, Kőnig's Theorem"
+  - id: z7u_B-a0akA
+    title: "Discrete Optimization Lecture 8: Weighted Matching and Perfect Matching Problems in Bipartite Graphs"
+  - id: a0UbfqOVAvM
+    title: "Discrete Optimization Lecture 9: Stable Marriage Problem and Tutte–Berge Formula"
+  - id: JVfMzlz2tFU
+    title: "Discrete Optimization Lecture 10: Matching Polytope and Network Flows"
+  - id: SD5mOJPFv_E
+    title: "Discrete Optimization Lecture 11: Max-Flow and Ford–Fulkerson Algorithm"
+  - id: 7cKMfUup2rU
+    title: "Discrete Optimization Lecture 12: Graph Colouring, Perfect Graphs and the Stable Set Polytope"
+  - id: 9CLZmvSNr6I
+    title: "Discrete Optimization Lecture 13: Edge Colouring"
+  - id: rZgWobdRZ34
+    title: "Discrete Optimization Lecture 14: List Colouring"
+  - id: FyYofj7cLTA
+    title: "Discrete Optimization Lecture 15: Dynamic Programming"
+  - id: cvLBTqcSX-4
+    title: "Discrete Optimization Lecture 16: Integer Linear Programs and Totally Unimodular Matrices"
+  - id: R2j9yx6UcY0
+    title: "Discrete Optimization Lecture 17: Semidefinite Programming"
+  - id: byrZXT0a24g
+    title: "Discrete Optimization Lecture 18: MAXCUT Approximation Algorithm via SDP"
+  - id: 6WNaqv58j6w
+    title: "Discrete Optimization Lecture 19: Introduction to Matroids and Greedy Algorithms"
+  - id: q-dmrBLj5XU
+    title: "Discrete Optimization Lecture 20: Matroid Duals, Restriction, Contraction and Equivalent Axioms"
+  - id: soBbhofmryc
+    title: "Discrete Optimization Lecture 21: Introduction to Matroid Intersection"
+  - id: wKlKC4XtM5A
+    title: "Discrete Optimization 22: Matroid Intersection Theorem and Algorithm"
+  - id: K0lS0oHycLc
+    title: "Discrete Optimization Lecture 23: Grover's Algorithm"

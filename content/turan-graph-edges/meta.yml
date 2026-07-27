@@ -1,0 +1,12 @@
+id: turan-graph-edges
+author: ebrahimpichka
+course: waterloo-co642
+video_id: _YPwH3c7OOE
+video_title: "Graph Theory 9-1: Turan's Theorem"
+start: 377
+concept: "Counting the edges of a Turan graph"
+concepts: [extremal-graph-theory, counting]
+tags: [graphs, python]
+runtime: pyodide
+packages: []
+level: graduate

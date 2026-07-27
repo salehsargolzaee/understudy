@@ -1,0 +1,12 @@
+id: greedy-coloring-bound
+author: ebrahimpichka
+course: waterloo-co642
+video_id: YEzMWEVCx1o
+video_title: "Graph Theory 1-4: Coloring and Brooks' Theorem."
+start: 611
+concept: "Greedy coloring and the Delta+1 bound"
+concepts: [graph-coloring, greedy-algorithms]
+tags: [graphs, python]
+runtime: pyodide
+packages: []
+level: graduate
